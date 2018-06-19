@@ -7,6 +7,7 @@ public class Edge {
 	private String id;
 	private String from ;
 	private String to ;
+	private String violation;
 	
 	
 	public Edge(){
@@ -14,13 +15,23 @@ public class Edge {
 		this.id = "";
 		this.from = "";
 		this.to = "";
+		this.violation = "0";
 	}
 	
-	public Edge(String type, String id, String from, String to) {
+	public String getViolation() {
+		return violation;
+	}
+
+	public void setViolation(String violation) {
+		this.violation = violation;
+	}
+
+	public Edge(String type, String id, String from, String to, String violation) {
 		this.type = type;
 		this.id = id;
 		this.from = from;
 		this.to = to;
+		this.violation = violation;
 	}
 	
 	public String getType() {

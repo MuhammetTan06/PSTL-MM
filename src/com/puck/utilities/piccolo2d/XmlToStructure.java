@@ -24,6 +24,7 @@ private static Edge parseAttributs(NamedNodeMap attrs) {
 	String edgeDestId = "";
 	String edgeSrcId ="";
 	String edgetype ="";
+	String edgeViolation = "";
 	
 	Edge edge = new Edge() ;
 	for (int k = 0; k < attrs.getLength(); k++) {
@@ -44,6 +45,10 @@ private static Edge parseAttributs(NamedNodeMap attrs) {
 			case "type":
 				edgetype = attribut.getValue();
 				edge.setType(edgetype);
+				break;
+			case "violation":
+				edgeViolation = attribut.getValue();
+				edge.setViolation(edgeViolation);
 				break;
 	
 			default:

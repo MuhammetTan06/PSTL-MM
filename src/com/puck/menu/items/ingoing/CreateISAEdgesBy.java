@@ -54,12 +54,12 @@ public class CreateISAEdgesBy extends JMenuItem {
 				PNode to = target;
 				PNode from = (allPNodes.get(e.getFrom()));
 				if (from.getParent() instanceof PiccoloCustomNode && !((PiccoloCustomNode) from.getParent()).isHidden()) {
-					Parrow arow = new ParrowExtends(from, to, from, to);
+					Parrow arow = new ParrowExtends(from, to, from, to, e.getViolation());
 					ANH.addArrow(arow);
 				} else {
 					for (PiccoloCustomNode pnode : ((PiccoloCustomNode) from).getAscendency()) {
 						if (!pnode.isHidden()) {
-							ANH.addArrow(new ParrowExtends(from, to, pnode, to));
+							ANH.addArrow(new ParrowExtends(from, to, pnode, to, e.getViolation()));
 							break;
 						}
 					}

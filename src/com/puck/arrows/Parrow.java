@@ -13,8 +13,17 @@ public abstract class Parrow extends PNode{
     protected PNode from;
     protected PNode to;
     protected boolean isAllowed;
+    protected String violation;
 
-    public PNode getFrom() {
+    public String getViolation() {
+		return violation;
+	}
+
+	public void setViolation(String violation) {
+		this.violation = violation;
+	}
+
+	public PNode getFrom() {
         return from;
     }
 
@@ -30,7 +39,7 @@ public abstract class Parrow extends PNode{
         this.to=to;
     }
 
-    public Parrow(PNode from,PNode to,PNode virtuaFrom,PNode virtualto){
+    public Parrow(PNode from,PNode to,PNode virtuaFrom,PNode virtualto, String edgeViolation){
         this.from=from;
         this.to=to;
         this.virtualFrom = virtuaFrom;

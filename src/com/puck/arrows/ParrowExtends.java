@@ -43,23 +43,17 @@ public class ParrowExtends extends Parrow {
 
 	}
 
-	public ParrowExtends(PNode from, PNode to, PNode virtualForm, PNode virtualTo) {
+	public ParrowExtends(PNode from, PNode to, PNode virtualForm, PNode virtualTo, String edgeViolation) {
 		this(((PiccoloCustomNode) from).getRect().getGlobalBounds().getCenter2D(),
 				((PiccoloCustomNode) to).getRect().getGlobalBounds().getCenter2D(),
 				((PiccoloCustomNode) virtualForm).getRect().getGlobalBounds().getCenter2D(),
 				((PiccoloCustomNode) virtualTo).getRect().getGlobalBounds().getCenter2D());
 		this.from = from;
-		PiccoloCustomNode f = (PiccoloCustomNode)this.from;
+	    this.violation = edgeViolation;
 		this.to = to;
-		PiccoloCustomNode t = (PiccoloCustomNode)this.to;
-		
-		Edge edge = new Edge();
-		edge.setId("0");
-		edge.setFrom(f.getidNode());
-		edge.setTo(t.getidNode());
-		edge.setType("isa");
-		
-		if (ForbiddenEdgeHolder.isForbidden(edge)) {
+			
+		if(this.violation.equals("1")) {
+				
 			line.setStrokePaint(Color.RED);
 		}
         
@@ -70,19 +64,19 @@ public class ParrowExtends extends Parrow {
 	@Override
 	public Parrow redraw() {
 		removeAllChildren();
-		return new ParrowExtends(from, to, from, to);
+		return new ParrowExtends(from, to, from, to, violation);
 	}
 
 	@Override
 	public Parrow redraw(PNode virtuaFrom) {
 		removeAllChildren();
-		return new ParrowExtends(from, to, virtuaFrom, to);
+		return new ParrowExtends(from, to, virtuaFrom, to, violation);
 	}
 
 	@Override
 	public Parrow redrawTo(PNode virtualTo) {
 		removeAllChildren();
-		return new ParrowExtends(from, to, virtualFrom, virtualTo);
+		return new ParrowExtends(from, to, virtualFrom, virtualTo, violation);
 	}
 
 }

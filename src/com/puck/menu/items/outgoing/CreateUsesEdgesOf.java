@@ -57,12 +57,12 @@ public class CreateUsesEdgesOf extends JMenuItem {
 					PNode to = (allPNodes.get(e.getTo()));
 					if (to.getParent() instanceof PiccoloCustomNode
 							&& !((PiccoloCustomNode) to.getParent()).isHidden()) {
-						ANH.addArrow(new ParrowUses(from, to, 10, from, to));
+						ANH.addArrow(new ParrowUses(from, to, 10, from, to, e.getViolation()));
 						ANH.updateAllPosition();
 					} else {
 						for (PiccoloCustomNode pnode : ((PiccoloCustomNode) to).getAscendency()) {
 							if (!pnode.isHidden()) {
-								ParrowUses p = new ParrowUses(from, to, 10, from, pnode);
+								ParrowUses p = new ParrowUses(from, to, 10, from, pnode, e.getViolation());
 								ANH.addArrow(p);
 								break;
 								
