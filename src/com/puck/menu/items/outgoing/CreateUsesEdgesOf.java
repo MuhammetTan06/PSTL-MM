@@ -16,6 +16,8 @@ import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
 import com.puck.arrows.ParrowUses;
+import com.puck.display.piccolo2d.NewDisplayDG;
+import com.puck.display.piccolo2d.NodeToPnodeParser;
 import com.puck.menu.Menu;
 import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.Node;
@@ -23,7 +25,7 @@ import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.utilities.piccolo2d.XmlToStructure;
 
 public class CreateUsesEdgesOf extends JMenuItem {
-	private HashMap<String, PiccoloCustomNode> allPNodes;
+	private static HashMap<String, PiccoloCustomNode> allPNodes;
 
 	private Map<String, Node> listNodes;
 	private PiccoloCustomNode pnode;
@@ -55,6 +57,14 @@ public class CreateUsesEdgesOf extends JMenuItem {
 				if (e.getType().equals("uses")) {
 					PNode from = target;
 					PNode to = (allPNodes.get(e.getTo()));
+					if(NewDisplayDG.getForbiddenEdges().contains(e.getId())) {
+						e.setViolation("1");
+						System.out.println("okok");
+					}
+					else
+						e.setViolation("0");
+					System.out.println("tototo: " + to);
+					System.out.println("ee: "+ allPNodes.size());
 					if (to.getParent() instanceof PiccoloCustomNode
 							&& !((PiccoloCustomNode) to.getParent()).isHidden()) {
 						ANH.addArrow(new ParrowUses(from, to, 10, from, to, e.getViolation()));
@@ -72,7 +82,7 @@ public class CreateUsesEdgesOf extends JMenuItem {
 				}
 			}
 		}
-		this.menu.hideMenu();
+		menu.hideMenu();
 	}
 
 	public void addActionListener() {

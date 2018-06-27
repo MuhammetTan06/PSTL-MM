@@ -12,8 +12,9 @@ public class TriangleHollow extends PNode{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public TriangleHollow(){
+	public TriangleHollow(Color c){
         PPath t = new PPath.Float();
+        t.setStrokePaint(c);
         t.moveTo(0,0);
         t.lineTo(-10,10);
         t.moveTo(0,0);

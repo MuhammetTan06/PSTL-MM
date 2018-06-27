@@ -14,6 +14,9 @@ public class ArrowNodesHolder extends PNode {
 	public void setHiddenArrows(Collection<Parrow> hiddenArrows) {
 		this.hiddenArrows = hiddenArrows;
 	}
+	public Collection<Parrow> getHiddenArrows() {
+		return this.hiddenArrows;
+	}
 
 	/**
 	 * 
@@ -63,12 +66,7 @@ public class ArrowNodesHolder extends PNode {
 		return set;
 	}
 
-	public Collection<Parrow> getHiddenArrows() {
-		Collection<Parrow> set = new HashSet<>();
-		for (Iterator<Parrow> iterator = hiddenArrows.iterator(); iterator.hasNext();)
-			set.add(iterator.next());
-		return set;
-	}
+	
 
 	public Collection<Parrow> getAllArrows() {
 		Collection<Parrow> set = new HashSet<>();

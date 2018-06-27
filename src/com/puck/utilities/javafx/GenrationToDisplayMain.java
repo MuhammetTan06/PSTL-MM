@@ -5,70 +5,111 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.Scanner;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.display.piccolo2d.NewDisplayDG;
-import com.puck.menu.items.outgoing.ForbiddenEdgeHolder;
 import com.puck.nodes.piccolo2d.Edge;
 import com.puck.refactoring.ExecuteRefactoringPlan;
 import com.puck.refactoring.RefactoringCommands;
 import com.puck.undoRedo.StateChanger2;
-
+import com.sun.deploy.uitoolkit.impl.fx.Utils;
 
 import java.awt.TextArea;
-import java.awt.Button;
+import java.awt.Toolkit;
 
 public class GenrationToDisplayMain extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JTextField jarPathText;
 	private JTextField projetPathText;
 	private TextArea puck2StdOut;
-	private String jarPath;
-	private String projectPath;
 	private final String jarConstraintService = "constraintChecker.jar"; 
 	private final JFileChooser jarChoser = new JFileChooser();
 	private final JFileChooser projectChooser = new JFileChooser();
 	private boolean writingDone = false;
-	JFrame frame;
+	private JFrame dgFrame;
 	private RunCommand runCommand;
+	private File currentWldFile;
+	private JFrame dependencyManagerFrame;
+	
+
+	
+
+
+	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+	// Generated using JFormDesigner Evaluation license - Muhammet Tan
+
 
 	public GenrationToDisplayMain() {
 		setTitle("Display");
 		getContentPane().setLayout(null);
+		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		scrollPane.setBounds(0, 0, 1024, 554);
 		getContentPane().add(scrollPane);
-
-		ForbiddenEdgeHolder forbiddenHolder = new ForbiddenEdgeHolder();
-		forbiddenHolder.addEdge(new Edge("uses", "0", "10", "1", "1"));
+		Dimension windowSize = new Dimension(1000, 700);
+		Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+		setPreferredSize(windowSize);
+		
+		setLocation((int)(screenSize.getWidth()/2) - (int)(windowSize.getWidth()/2), (int)(screenSize.getHeight()/2) - (int)(windowSize.getHeight()/2));
+		
+		
+		pack();
+		
+		
+		
+		
+		
+	
+		
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		scrollPane.setViewportView(tabbedPane);
@@ -76,7 +117,9 @@ public class GenrationToDisplayMain extends JFrame {
 		JPanel panel_conf = new JPanel();
 		tabbedPane.addTab("Configuration", null, panel_conf, null);
 		panel_conf.setLayout(null);
+		
 
+		
 		jarPathText = new JTextField("C:\\Users\\Momoche\\Desktop\\projetStage\\puck2-master-new\\puck2.jar");
 		jarPathText.setBounds(112, 6, 571, 33);
 		panel_conf.add(jarPathText);
@@ -132,6 +175,8 @@ public class GenrationToDisplayMain extends JFrame {
 					
 					checkForWLDFile();
 					
+					setState(JFrame.ICONIFIED);
+					
 
 				} catch (Exception e1) {
 					e1.printStackTrace();
@@ -167,12 +212,11 @@ public class GenrationToDisplayMain extends JFrame {
 			}
 		});
 		if(wldFiles.length==0) {
-			System.out.println("aucun fichier wld trouvé ... ");
+			System.out.println("No .wld file found ... ");
 			Object[] opt = { "yes", "no"};
-			JOptionPane pane = new JOptionPane();
 			int result = JOptionPane.showOptionDialog(GenrationToDisplayMain.this,
-					"Voulez-vous charger un .wld?" ,
-					"Aucun fichier .wld trouvé",
+					"Do you want to load a .wld file?" ,
+					"No .wld file found",
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE,
 					null,
@@ -183,27 +227,31 @@ public class GenrationToDisplayMain extends JFrame {
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("weland file", "wld");
 				chooser.setFileFilter(filter);
 				chooser.setCurrentDirectory(f);
-				chooser.setDialogTitle("Charger un fichier WLD");
+				chooser.setDialogTitle("Load a .wld file");
 				
 				int resultValue = chooser.showOpenDialog(GenrationToDisplayMain.this);
 				if(resultValue == JFileChooser.APPROVE_OPTION) {
-					File wldFile = chooser.getSelectedFile();
+					currentWldFile = chooser.getSelectedFile();
 				}
 			}
 			
 				
 		}
 		else if(wldFiles.length==1) {
-			System.out.println("fichier "+wldFiles[0].getName()+" trouvé");
+			System.out.println("fichier "+wldFiles[0].getName()+" found");
+			currentWldFile = wldFiles[0];
 		}
 		else {
 			JFileChooser chooser = new JFileChooser();
 			FileNameExtensionFilter filter = new FileNameExtensionFilter("weland file", "wld");
 			chooser.setFileFilter(filter);
 			chooser.setCurrentDirectory(f);
-			chooser.setDialogTitle("Charger un fichier WLD");
+			chooser.setDialogTitle("Load a .wld file");
 			
-			chooser.showOpenDialog(GenrationToDisplayMain.this);
+			int resultValue = chooser.showOpenDialog(GenrationToDisplayMain.this);
+			if(resultValue == JFileChooser.APPROVE_OPTION) {
+				currentWldFile = chooser.getSelectedFile();
+			}
 		}
 	}
 		
@@ -214,19 +262,18 @@ public class GenrationToDisplayMain extends JFrame {
 //		chooser.showOpenDialog(GenrationToDisplayMain.this);
 		
 	
-	
 	public JFrame init(String[] args) {
 		// Component
+	
 		PSwingCanvas canvas = new PSwingCanvas();
-
 		JButton undo = new JButton("UNDO");
 		JButton redo = new JButton("REDO");
 		JButton save = new JButton("SAVE-Refactoring Plan");
 		JButton execute = new JButton("Execute-Refactoring Plan");
 		JButton impor = new JButton("LOAD-refactoring Plan");
 		JButton generate = new JButton("Generate code source");
-		JButton forbiddenDependencies = new JButton("calculate forbidden Dependencies");
-		JButton loadWld = new JButton("LOAD-.wld");
+		JButton dependenciesManager = new JButton("Manage Dependencies");
+		
 		undo.setSize(40, 40);
 		JToolBar toolBar = new JToolBar();
 		toolBar.add(undo);
@@ -235,8 +282,8 @@ public class GenrationToDisplayMain extends JFrame {
 		toolBar.add(impor);
 		toolBar.add(execute);
 		toolBar.add(generate);
-		toolBar.add(forbiddenDependencies);
-		toolBar.add(loadWld);
+		toolBar.add(dependenciesManager);
+		
 
 		JFileChooser fc = new JFileChooser();
 		fc.setMultiSelectionEnabled(false);
@@ -292,29 +339,20 @@ public class GenrationToDisplayMain extends JFrame {
 				}
 			}
 		});
-		forbiddenDependencies.addActionListener(new ActionListener() {
+		dependenciesManager.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				ProcessBuilder pb = new ProcessBuilder("java", "-jar", System.getProperty("user.dir")+"\\"+jarConstraintService, System.getProperty("user.dir")+"\\DependecyGraph.xml", "C:\\Users\\Momoche\\eclipse-workspace\\test\\yo.wld");
-				pb.redirectErrorStream(true);
-				runCommand = new RunCommand(pb);
-				runCommand.start();
+				
+				if(dependencyManagerFrame==null) {
+					 showDependencyManagerWindow(dependenciesManager);
+					 System.out.println(!dependencyManagerFrame.isDisplayable());
+				}
+				else {
+					dependencyManagerFrame.requestFocus();
+				}
 				
 			}
 		});
-		loadWld.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				File f = new File(projetPathText.getText());
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setFileFilter(new FileNameExtensionFilter("weland file", "wld"));
-				fileChooser.setCurrentDirectory(f);
-				if (fileChooser.showSaveDialog(canvas) == JFileChooser.APPROVE_OPTION) {
-					System.out.println("fichier selectionné : "+fileChooser.getSelectedFile().getName());
-				}						
-				
-			}
-		});
+//		
 		impor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fc.addChoosableFileFilter(new FileNameExtensionFilter("*.xml", "xml"));
@@ -329,33 +367,63 @@ public class GenrationToDisplayMain extends JFrame {
 		try {
 			if (args.length == 0) {
 				System.out.println("Appel de la newDisplayDG sans aucun argument");
-				frame = new NewDisplayDG(canvas, "DependecyGraph.xml");
+				dgFrame = new NewDisplayDG(canvas, "DependecyGraph.xml");
 			} else {
-				frame = new NewDisplayDG(canvas, args[0]);
+				dgFrame = new NewDisplayDG(canvas, args[0]);
 			}
 
 			canvas.setPreferredSize(new Dimension(1000, 500));
 
-			// Jframe Container
-			Container container = frame.getContentPane();
-			container.setLayout(new BorderLayout());
-			container.add(canvas, BorderLayout.CENTER);
-			container.add(toolBar, BorderLayout.PAGE_START);
-
-			frame.pack();
-			frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-			frame.setVisible(true);
+			JLayeredPane internalFrame1 = new JLayeredPane();
+			Dimension frameSize = new Dimension(1000, 700);
+			Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+			dgFrame.setPreferredSize(frameSize);
+            internalFrame1.setVisible(true);
+            double a = 1.3;
+            JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, internalFrame1);
+            jsp.setOneTouchExpandable(true);
+            System.out.println(dgFrame.getPreferredSize().getWidth());
+            jsp.setDividerLocation((int)(frameSize.getWidth()));
+            
+            Collection<Edge> forbEdges = ((NewDisplayDG) dgFrame).getForbiddenEdges();
+            int offsetY = 20;
+            for (Edge e : forbEdges) {
+            	JButton bt = new JButton(e.getFrom() + " - " + e.getTo());
+            	bt.setBounds(0, 0, 100, 50);
+            	internalFrame1.add(bt);
+            	bt.setLocation(100, offsetY+=20);
+            	bt.setVisible(true);
+            	bt.addActionListener(new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						
+					}
+				});
+            }
+          
+            // Jframe Container
+            Container container = dgFrame.getContentPane();
+            container.setLayout(new BorderLayout());
+            container.add(jsp, BorderLayout.CENTER);
+            container.add(toolBar, BorderLayout.PAGE_START);
+    
+            dgFrame.add(jsp, BorderLayout.CENTER);
+            
+			dgFrame.setLocation((int)(screenSize.getWidth()/2) - (int)(frameSize.getWidth()/2), (int)(screenSize.getHeight()/2) - (int)(frameSize.getHeight()/2));
+			dgFrame.pack();
+			dgFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+			dgFrame.setVisible(true);
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		return frame;
+		return dgFrame;
 	}
 
 	public static void main(String[] args) {
 		JFrame frame = new GenrationToDisplayMain();
 		frame.pack();
-		frame.setSize(1040, 810);
 		frame.setVisible(true);
 	}
 
@@ -394,7 +462,7 @@ public class GenrationToDisplayMain extends JFrame {
 						String sub = line.substring(line.indexOf(":")+2, line.length());
 						String [] split = sub.split(" ");
 						if (split.length > 0) 
-						((NewDisplayDG)frame).renameNodes(split);
+						((NewDisplayDG)dgFrame).renameNodes(split);
 					}
 				}
 
@@ -422,5 +490,250 @@ public class GenrationToDisplayMain extends JFrame {
 			return writer;
 		}
 
+	}
+	
+	private void showDependencyManagerWindow(JButton button) {
+		
+		dependencyManagerFrame = new JFrame();
+		dependencyManagerFrame.setVisible(true);
+		dependencyManagerFrame.setLocationRelativeTo(null);
+		
+		JButton button1;
+		JButton button2;
+		JButton button3;
+		JTextArea textArea1;
+		JScrollPane scrollPane1;
+		JTextArea textArea2;
+		JRadioButton radioButton1;
+		JRadioButton radioButton2;
+		JTextField textField1;
+		JLabel label1;
+		
+		
+		label1 = new JLabel();
+		button1 = new JButton();
+		button2 = new JButton();
+	
+		scrollPane1 = new JScrollPane();
+		JEditorPane editorPane1 = new JEditorPane();
+		
+		StringBuilder str = new StringBuilder();
+		if(currentWldFile!=null) {
+			BufferedReader br ;
+			try {
+				br = new BufferedReader(new FileReader(currentWldFile));
+				String line;
+				while((line=br.readLine())!=null) {
+					str.append(line).append("\n");
+				}
+				br.close();
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		editorPane1.setText(str.toString());
+		//======== this ========
+		dependencyManagerFrame.setTitle("Dependencies Manager");
+		dependencyManagerFrame.setForeground(Color.black);
+		Dimension frameDim = new Dimension(700, 450);
+		Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+		dependencyManagerFrame.setSize(frameDim);
+		dependencyManagerFrame.setPreferredSize(frameDim);
+		dependencyManagerFrame.setLocation((int)(screenSize.getWidth()/2 - frameDim.getWidth()/2), (int)(screenSize.getHeight()/2 - frameDim.getHeight()/2));
+			
+		
+//		addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void addActionListener(ActionListener e) {
+//				actionPerformed(e);
+//			}
+//		});
+		Container contentPane = dependencyManagerFrame.getContentPane();
+		contentPane.setLayout(null);
+		contentPane.setPreferredSize(new Dimension(445, 300));
+
+		//---- label1 ----
+				String nameWldFile = currentWldFile==null?"none":currentWldFile.getName();
+				label1.setText("Current .wld file : "+ nameWldFile);
+				
+				contentPane.add(label1);
+				label1.setBounds(20, 360, 255, 30);
+
+				//---- button1 ----
+				button1.setText("Load wld file");
+				button1.setBackground(Color.white);
+				contentPane.add(button1);
+				int parentWidth = (int) dependencyManagerFrame.getWidth();
+				int parentHeight = (int) dependencyManagerFrame.getHeight();
+				
+				System.out.println("parentWidht : "+ parentHeight);
+				button1.setBounds(0, 0, 185, 35);
+				button1.setLocation(parentWidth*18/100, parentHeight*70/100);
+				
+
+				//---- button2 ----
+				button2.setText("Save modifications");
+				button2.setBackground(Color.white);
+				contentPane.add(button2);
+				button2.setBounds(0, 0, 185, 35);
+				button2.setLocation(parentWidth- parentWidth*18/100 - button2.getWidth() - 17, parentHeight*70/100);
+
+				//======== scrollPane1 ========
+				{
+					scrollPane1.setViewportView(editorPane1);
+				}
+				contentPane.add(scrollPane1);
+				scrollPane1.setBounds(70, 25, 535, 275);
+
+				
+				
+
+		
+
+		
+		
+		
+		
+		button1.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File f = new File(projetPathText.getText());
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileFilter(new FileNameExtensionFilter("weland file", "wld"));
+				fileChooser.setCurrentDirectory(f);
+				if (fileChooser.showSaveDialog(dependencyManagerFrame) == JFileChooser.APPROVE_OPTION) {
+					System.out.println("fichier selectionné : "+fileChooser.getSelectedFile().getName());
+					currentWldFile = fileChooser.getSelectedFile();
+					String nameWldFile = currentWldFile==null?"none":currentWldFile.getName();
+					label1.setText("Current .wld file : "+ nameWldFile);
+				}						
+				
+			}
+		});
+		
+		
+		button2.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveWldFile(editorPane1);
+				calculateDependencies();
+				Dimension dialogSize = new Dimension(500, 100);
+				Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+				
+						
+				JOptionPane j = new JOptionPane(currentWldFile.getName()+" has been successfully saved in : "+ currentWldFile.getPath()+"\n\n"
+						+ "Forbidden dependencies have been saved in : " +System.getProperty("user.dir")+ "\\forbiddenEdges.tan",
+						JOptionPane.INFORMATION_MESSAGE);
+				j.setPreferredSize(dialogSize);
+				j.setLocation((int)(screenSize.getWidth()/2 - dialogSize.getWidth()/2), (int)(screenSize.getHeight()/2 - dialogSize.getHeight()/2));
+				j.showMessageDialog(editorPane1, j.getMessage(), "files saved!", j.getMessageType());
+			}
+		});
+		
+		dependencyManagerFrame.addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO Auto-generated method stub
+				dependencyManagerFrame = null;
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				
+				
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+	
+		
+		// JFormDesigner - End of component initialization  //GEN-END:initComponents
+		
+	}
+	
+	private void saveWldFile(JEditorPane p) {
+		String str = p.getText();
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(currentWldFile));
+			bw.write(str);
+			bw.close();
+			
+		
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	
+	}
+
+	private void calculateDependencies() {
+		if(currentWldFile==null) {
+			
+			JOptionPane.showMessageDialog(GenrationToDisplayMain.this,
+					"No .wld file found..." ,
+					"Y .wld !",
+					JOptionPane.WARNING_MESSAGE);
+		}
+		else {
+			ProcessBuilder pb = new ProcessBuilder("java", "-jar", System.getProperty("user.dir")+"\\"+jarConstraintService,
+					System.getProperty("user.dir")+"\\DependecyGraph.xml", currentWldFile.getAbsolutePath());
+			pb.redirectErrorStream(true);
+			runCommand = new RunCommand(pb);
+			runCommand.start();
+			
+			Dimension dialogSize = new Dimension(400, 100);
+			Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
+			
+			
+			
+//			JOptionPane.showMessageDialog(GenrationToDisplayMain.this,
+//					"Forbidden dependencies have been saved in : " +System.getProperty("user.dir")+ "forbiddenEdges.tan" ,
+//					"Successfully saved!",
+//					JOptionPane.INFORMATION_MESSAGE);
+		
+			
+			
+	
+			
+			((NewDisplayDG) dgFrame).refreshEdgesDisplay();
+			
+//			
+		}			
 	}
 }

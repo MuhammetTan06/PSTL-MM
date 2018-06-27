@@ -9,7 +9,6 @@ import org.piccolo2d.PNode;
 import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
 
-import com.puck.menu.items.outgoing.ForbiddenEdgeHolder;
 import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 
@@ -21,13 +20,25 @@ public class ParrowExtends extends Parrow {
                             BasicStroke.CAP_BUTT,
                             BasicStroke.JOIN_MITER,
                             10.0f, dash1, 0.0f);
-	public ParrowExtends(Point2D from, Point2D to, Point2D virtuaFrom, Point2D virtualTo) {
+	public ParrowExtends(Point2D from, Point2D to, Point2D virtuaFrom, Point2D virtualTo, String edgeViolation) {
 		super(from, to, virtuaFrom, virtualTo);
 		from = virtuaFrom;
 		to = virtualTo;
-		Triangle head = new Triangle(Color.WHITE);
+		Triangle head = null;
 
 		line = PPath.createLine(from.getX(), from.getY(), to.getX(), to.getY());
+		
+		this.violation = edgeViolation;
+		if(this.violation.equals("1")) {
+			line.setStroke(new BasicStroke(3));
+			line.setStrokePaint(Color.RED);
+			head = new Triangle(Color.RED);
+		}else if(this.violation.equals("0")) {
+			line.setStroke(new BasicStroke(1));
+			line.setStrokePaint(Color.BLACK);
+			head = new Triangle(Color.WHITE);
+		}
+        
 		line.setStroke(dashed);
 		double theta = Math.atan2(to.getY() - from.getY(), to.getX() - from.getX()) + Math.toRadians(90);
 		head.translate(to.getX(), to.getY());
@@ -36,10 +47,10 @@ public class ParrowExtends extends Parrow {
 		addChild(line);
 		addChild(head);
 		
-		PText text= new PText("arrowExtends");
-		text.setBounds((from.getX()+to.getX())/2, (from.getY()+to.getY())/2, text.getWidth(), text.getHeight());
-		text.rotateInPlace(line.getGlobalRotation());
-		addChild(text);
+//		PText text= new PText("arrowExtends");
+//		text.setBounds((from.getX()+to.getX())/2, (from.getY()+to.getY())/2, text.getWidth(), text.getHeight());
+//		text.rotateInPlace(line.getGlobalRotation());
+//		addChild(text);
 
 	}
 
@@ -47,16 +58,11 @@ public class ParrowExtends extends Parrow {
 		this(((PiccoloCustomNode) from).getRect().getGlobalBounds().getCenter2D(),
 				((PiccoloCustomNode) to).getRect().getGlobalBounds().getCenter2D(),
 				((PiccoloCustomNode) virtualForm).getRect().getGlobalBounds().getCenter2D(),
-				((PiccoloCustomNode) virtualTo).getRect().getGlobalBounds().getCenter2D());
+				((PiccoloCustomNode) virtualTo).getRect().getGlobalBounds().getCenter2D(),
+				edgeViolation);
+		
 		this.from = from;
-	    this.violation = edgeViolation;
 		this.to = to;
-			
-		if(this.violation.equals("1")) {
-				
-			line.setStrokePaint(Color.RED);
-		}
-        
 		this.virtualFrom = virtualForm;
 		this.virtualto = virtualTo;
 	}

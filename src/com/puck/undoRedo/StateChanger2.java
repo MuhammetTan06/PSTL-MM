@@ -74,6 +74,9 @@ public class StateChanger2 implements Changeable{
 
 	}
 
+	public PiccoloCustomNode getRoot() {
+		return this.root;
+	}
 
 	@Override
 	public void redo() {

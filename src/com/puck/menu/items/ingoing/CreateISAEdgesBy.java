@@ -66,7 +66,7 @@ public class CreateISAEdgesBy extends JMenuItem {
 				}
 			}
 		// }
-		this.menu.hideMenu();
+		menu.hideMenu();
 	}
 
 	public void addActionListener() {

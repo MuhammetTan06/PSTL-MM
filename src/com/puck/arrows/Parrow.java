@@ -7,6 +7,7 @@ import org.piccolo2d.PNode;
 
 public abstract class Parrow extends PNode{
     public Parrow(Point2D from, Point2D to,Point2D virtuaFrom,Point2D virtualTo){
+    	
     }
     protected PNode virtualFrom;
     protected PNode virtualto;
@@ -39,12 +40,13 @@ public abstract class Parrow extends PNode{
         this.to=to;
     }
 
-    public Parrow(PNode from,PNode to,PNode virtuaFrom,PNode virtualto, String edgeViolation){
+    public Parrow(PNode from,PNode to,PNode virtuaFrom,PNode virtualto){
         this.from=from;
         this.to=to;
         this.virtualFrom = virtuaFrom;
         this.virtualto = virtualto;
         this.isAllowed = true;
+        this.violation = "0";
         
     }
 
@@ -56,10 +58,10 @@ public abstract class Parrow extends PNode{
     public boolean equals(Object arrow){
         if(!(arrow instanceof Parrow))
             return false;
-        return this.from==((Parrow) arrow).getFrom()
-                &&this.to==((Parrow) arrow).getTo()
-                &&this.virtualFrom==((Parrow) arrow).getVirtualFrom()
-                &&this.virtualto==((Parrow) arrow).getVirtualto();
+        Parrow p = (Parrow) arrow;
+        return this.from==p.from
+                &&this.to==p.to
+               ;
     }
 
 	public PNode getVirtualFrom() {

@@ -81,6 +81,8 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		addClass = new AddNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, NodeType.CLASS, state);
 		addPackage =  new AddNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, NodeType.PACKAGE, state);
 		renameNode = new RenameNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, state);
+		
+		System.out.println("PCustom L 85 - " + this.allPNodes);
 	}
 
 	public PCustomInputEventHandler(PiccoloCustomNode pnode) {

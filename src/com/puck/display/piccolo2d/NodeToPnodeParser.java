@@ -22,7 +22,7 @@ import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 public class NodeToPnodeParser {
 	private HashMap<String, PiccoloCustomNode> allPNodes ;
 	private Map<String, Node> listNodes;
-	private static List<String> forbiddenIDs;
+	public static List<String> forbiddenIDs;
 
 	public NodeToPnodeParser(HashMap<String, PiccoloCustomNode> allPNodes,Map<String, Node> listNodes) {
 		this.allPNodes= allPNodes;
@@ -30,11 +30,12 @@ public class NodeToPnodeParser {
 	}
 	
 	public PiccoloCustomNode getPackageNodes() {
-		readForbiddenEdges();
+		//readForbiddenEdges();
 		Collection<PiccoloCustomNode> listePNode = new ArrayList<>();
 		
 
 		PiccoloCustomNode root = new PiccoloCustomNode("root", "r01","root");
+		
 		for (Entry<String, Node> entry : listNodes.entrySet()) {
 			String key = entry.getKey();
 			Node n = entry.getValue();
@@ -49,8 +50,7 @@ public class NodeToPnodeParser {
 				Collection<PiccoloCustomNode> children = new ArrayList<>();
 				for (Entry<String, Edge> edgeEntry : relation.entrySet()) {
 					Edge e = edgeEntry.getValue();
-					if(forbiddenIDs.contains(e.getId()))
-						e.setViolation("1");
+					
 					Node node = listNodes.get(e.getTo());
 					PiccoloCustomNode pnode;
 					if (allPNodes.containsKey(node.getId())) {
@@ -75,10 +75,12 @@ public class NodeToPnodeParser {
 		}
 		root.addChildren(listePNode);
 		root.setName("root");
-		System.err.println("root children"+listePNode.size());
+//		System.err.println("root children"+listePNode.size());
+//		System.out.println();
 		return root;
+		
 	}
-
+   
 
 	public PiccoloCustomNode structureToPiccolo(Node node, PiccoloCustomNode pnode) {
 		if (pnode.getidNode() == null) {
@@ -89,8 +91,9 @@ public class NodeToPnodeParser {
 		HashMap<String, Edge> relation = new HashMap<>(node.getRelation());
 		for (Entry<String, Edge> edgeEntry : relation.entrySet()) {
 			Edge e = edgeEntry.getValue();
-			if(forbiddenIDs.contains(e.getId()))
-				e.setViolation("1");
+			
+			
+
 			if (e.getType().equals("contains")) {
 				Node n = listNodes.get(e.getTo());
 				PiccoloCustomNode pnodeBis = new PiccoloCustomNode(n.getName(), n.getId(),n.getType());
@@ -107,39 +110,16 @@ public class NodeToPnodeParser {
 	}
 	
 	
-	private void readForbiddenEdges() {
-		File f = new File(System.getProperty("user.dir"));
-		File[] list = f.listFiles(new FilenameFilter() {
-			
-			@Override
-			public boolean accept(File dir, String name) {
-				
-					return name.endsWith(".diawara");
-				
-			}
-		}); 
-		forbiddenIDs = new ArrayList<String>();
-		BufferedReader bf;
-		if(list.length!=0) {
-			try {
-				bf = new BufferedReader(new FileReader(list[0]));
-				String line;
-				try {
-					while((line=bf.readLine())!=null) {
-						forbiddenIDs.add(line);
-					}
-				bf.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
+	
+		
+//		System.out.println("\n\n");
+//		for(String s:forbiddenIDs)
+//			System.out.println(s);
+//		System.out.println("\n\n");
 		
 		
 		
-	}
+	
 	
 	
 

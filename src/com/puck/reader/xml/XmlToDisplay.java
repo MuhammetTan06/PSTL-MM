@@ -50,6 +50,7 @@ public class XmlToDisplay {
 		this.ANH = new ArrowNodesHolder();
 		root.setParent(new PNode());
 		root.expandAll();
+		
 		createEdgesHierarchyBy = new CreateEgdesHierarchyBy(root, canvas, allPNodes, menu, ANH, listNodes);
 		createEdgesHierarchyOf = new CreateEgdesHierarchyOf(root, canvas, allPNodes, menu, ANH, listNodes);
 		addPnodes(root);
