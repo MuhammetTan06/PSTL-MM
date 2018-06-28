@@ -617,10 +617,12 @@ public class GenrationToDisplayMain extends JFrame {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				((NewDisplayDG)dgFrame).getANH().updateAllPosition();
 				saveWldFile(editorPane1);
 				displayDependenciesOnDG();
 				
 				showForbiddenDependencies();
+				((NewDisplayDG)dgFrame).getANH().updateAllPosition();
 				Dimension dialogSize = new Dimension(500, 100);
 				Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
 				
@@ -746,6 +748,7 @@ public class GenrationToDisplayMain extends JFrame {
 		PiccoloCustomNode toNode = frame.getAllPNodes().get(ed.getTo());
 		toAndFrom.add(fromNode);
 		toAndFrom.add(toNode);
+		frame.getANH().updateAllPosition();
 		if(ed.getType().equals("contains")) {
 			for(PiccoloCustomNode p : toAndFrom) {
 				NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
@@ -765,6 +768,7 @@ public class GenrationToDisplayMain extends JFrame {
 				frame.getANH().addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
 			}
 		}
+		frame.getANH().updateAllPosition();
 		
 		PiccoloCustomNode p = null;
 		
@@ -776,13 +780,19 @@ public class GenrationToDisplayMain extends JFrame {
 		while(p.isHidden()) {
 			p.getLastVisibleParent().expandAll();
 		}
-		int it =  p.getParent().getChildrenCount();
-		for(PiccoloCustomNode child : p.getParentNode().getAllChildren() ) {
-			
-			if(!(child.getidNode().equals(p.getidNode()))) {
-				child.collapseAll();
+		p.collapseAll();
+
+		PiccoloCustomNode par;
+
+		do {
+			par = p.getParentNode();
+			for(PiccoloCustomNode ch : par.getAllChildren()) {
+				if(!(p.getidNode().equals(ch.getidNode()))) {
+					ch.collapseAll();
+				}
 			}
-		}
+			p = p.getParentNode();
+		}while(!(par.getidNode().equals(p.getHigherParent().getidNode())));
 		
 	}
 

@@ -1,36 +1,54 @@
 <?xml version="1.0"?>
 <DG>
-	<node type="package" id="0" name="test"/>
-	<node type="class" id="1" name="Couleur"/>
-	<node type="package" id="3" name="lang"/>
-	<node type="class" id="4" name="B"/>
-	<node type="class" id="5" name="A"/>
-	<node type="attribute" id="6" name="bb"/>
-	<node type="class" id="7" name="t"/>
-	<node type="attribute" id="8" name="couleurs"/>
-	<node type="package" id="10" name="util"/>
-	<node type="attribute" id="11" name="r"/>
-	<node type="method" id="12" name="Couleur)"/>
-	<node type="parameter" id="13" name="c"/>
-	<node type="methodbody" id="14" name="body"/>
-	<edge type="contains" src="0" dest="1" id="1" violation="0"/>
-	<edge type="isa" src="4" dest="5" id="2" violation="0"/>
-	<edge type="contains" src="12" dest="13" id="4" violation="0"/>
-	<edge type="contains" src="12" dest="14" id="5" violation="0"/>
-	<edge type="contains" src="0" dest="4" id="6" violation="0"/>
-	<edge type="contains" src="0" dest="5" id="7" violation="0"/>
-	<edge type="contains" src="0" dest="7" id="8" violation="0"/>
-	<edge type="uses" src="13" dest="1" id="9" violation="0"/>
-	<edge type="uses" src="11" dest="1" id="10" violation="0"/>
-	<edge type="uses" src="1" dest="1" id="13" violation="0"/>
-	<edge type="uses" src="7" dest="7" id="14" violation="0"/>
-	<edge type="contains" src="5" dest="6" id="16" violation="0"/>
-	<edge type="contains" src="5" dest="7" id="17" violation="0"/>
-	<edge type="contains" src="5" dest="8" id="18" violation="0"/>
-	<edge type="contains" src="5" dest="11" id="19" violation="0"/>
-	<edge type="contains" src="5" dest="12" id="20" violation="0"/>
-	<edge type="uses" src="12" dest="1" id="21" violation="0"/>
-	<edge type="uses" src="8" dest="1" id="22" violation="0"/>
-	<edge type="uses" src="14" dest="11" id="23" violation="0"/>
-	<edge type="uses" src="6" dest="4" id="24" violation="0"/>
+	<node type="package" id="0" name="papaa"/>
+	<node type="class" id="1" name="c1"/>
+	<node type="attribute" id="2" name="nb"/>
+	<node type="attribute" id="3" name="INDEX"/>
+	<node type="method" id="4" name="c1()"/>
+	<node type="methodbody" id="5" name="body"/>
+	<node type="method" id="6" name="print()"/>
+	<node type="methodbody" id="7" name="body"/>
+	<node type="package" id="11" name="test"/>
+	<node type="class" id="12" name="Couleur"/>
+	<node type="package" id="14" name="lang"/>
+	<node type="class" id="15" name="B"/>
+	<node type="class" id="16" name="A"/>
+	<node type="attribute" id="17" name="bb"/>
+	<node type="class" id="18" name="t"/>
+	<node type="attribute" id="19" name="couleurs"/>
+	<node type="package" id="21" name="util"/>
+	<node type="attribute" id="22" name="r"/>
+	<node type="method" id="23" name="Couleur)"/>
+	<node type="parameter" id="24" name="c"/>
+	<node type="methodbody" id="25" name="body"/>
+	<edge type="uses" src="12" dest="12" id="1" violation="0"/>
+	<edge type="uses" src="18" dest="18" id="2" violation="0"/>
+	<edge type="contains" src="4" dest="5" id="3" violation="0"/>
+	<edge type="contains" src="6" dest="7" id="4" violation="0"/>
+	<edge type="contains" src="0" dest="1" id="5" violation="0"/>
+	<edge type="contains" src="16" dest="17" id="7" violation="0"/>
+	<edge type="contains" src="16" dest="18" id="8" violation="0"/>
+	<edge type="contains" src="16" dest="19" id="9" violation="0"/>
+	<edge type="contains" src="16" dest="22" id="10" violation="0"/>
+	<edge type="contains" src="16" dest="23" id="11" violation="0"/>
+	<edge type="uses" src="23" dest="12" id="12" violation="0"/>
+	<edge type="uses" src="19" dest="12" id="13" violation="0"/>
+	<edge type="uses" src="7" dest="2" id="14" violation="0"/>
+	<edge type="uses" src="5" dest="2" id="15" violation="0"/>
+	<edge type="uses" src="25" dest="22" id="16" violation="0"/>
+	<edge type="uses" src="5" dest="3" id="17" violation="0"/>
+	<edge type="uses" src="17" dest="15" id="18" violation="0"/>
+	<edge type="contains" src="1" dest="2" id="20" violation="0"/>
+	<edge type="contains" src="11" dest="12" id="21" violation="0"/>
+	<edge type="isa" src="15" dest="16" id="22" violation="0"/>
+	<edge type="contains" src="23" dest="24" id="24" violation="0"/>
+	<edge type="contains" src="1" dest="3" id="25" violation="0"/>
+	<edge type="contains" src="23" dest="25" id="27" violation="0"/>
+	<edge type="contains" src="1" dest="4" id="28" violation="0"/>
+	<edge type="contains" src="11" dest="15" id="30" violation="0"/>
+	<edge type="contains" src="1" dest="6" id="31" violation="0"/>
+	<edge type="contains" src="11" dest="16" id="32" violation="0"/>
+	<edge type="contains" src="11" dest="18" id="33" violation="0"/>
+	<edge type="uses" src="24" dest="12" id="34" violation="0"/>
+	<edge type="uses" src="22" dest="12" id="35" violation="0"/>
 </DG>
