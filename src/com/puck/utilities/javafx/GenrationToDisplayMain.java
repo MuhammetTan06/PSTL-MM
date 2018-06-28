@@ -24,7 +24,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Scanner;
 
 import javax.swing.BorderFactory;
@@ -50,12 +53,19 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
+import org.piccolo2d.nodes.PText;
 
+import com.puck.arrows.ParrowExtends;
+import com.puck.arrows.ParrowUses;
 import com.puck.display.piccolo2d.NewDisplayDG;
+import com.puck.menu.items.removing.RemovesHierarchyEdgesOf;
 import com.puck.nodes.piccolo2d.Edge;
+import com.puck.nodes.piccolo2d.NodeContent;
+import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.refactoring.ExecuteRefactoringPlan;
 import com.puck.refactoring.RefactoringCommands;
 import com.puck.undoRedo.StateChanger2;
+import com.puck.utilities.piccolo2d.PCustomInputEventHandler;
 import com.sun.deploy.uitoolkit.impl.fx.Utils;
 
 import java.awt.TextArea;
@@ -607,9 +617,12 @@ public class GenrationToDisplayMain extends JFrame {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				((NewDisplayDG)dgFrame).getANH().updateAllPosition();
 				saveWldFile(editorPane1);
-				calculateDependencies();
+				displayDependenciesOnDG();
+				
 				showForbiddenDependencies();
+				((NewDisplayDG)dgFrame).getANH().updateAllPosition();
 				Dimension dialogSize = new Dimension(500, 100);
 				Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
 				
@@ -703,6 +716,84 @@ public class GenrationToDisplayMain extends JFrame {
 
 	private void showOnlyFocusedDependency(Edge ed) {
 		
+		//cleanAllDependencies
+		NewDisplayDG frame = ((NewDisplayDG)dgFrame);
+		for(PiccoloCustomNode p : frame.getAllPNodes().values()) {
+			System.out.println(p.getName());
+			NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
+			
+			newContent.getText().setTextPaint(Color.BLACK);
+			newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.PLAIN, 12));
+			
+			newContent.setOffset(p.getContent().getOffset().getX(),
+					p.getContent().getOffset().getY());
+			newContent.addInputEventListener(new PCustomInputEventHandler(p, frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()));
+			
+			p.setContent(newContent);
+			
+		}
+		new RemovesHierarchyEdgesOf(frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()).drawOutgoingdges(frame.getRoot(), frame.getCanvas());
+		frame.getANH().updateAllPosition();
+		//display focused dependency
+		displayForbiddenDep(ed);
+		frame.getANH().updateAllPosition();
+		frame.getRoot().setLayout();
+		
+	}
+
+	private void displayForbiddenDep(Edge ed) {
+		NewDisplayDG frame = ((NewDisplayDG)dgFrame);
+		List<PiccoloCustomNode> toAndFrom = new ArrayList<PiccoloCustomNode>();
+		PiccoloCustomNode fromNode = frame.getAllPNodes().get(ed.getFrom());
+		PiccoloCustomNode toNode = frame.getAllPNodes().get(ed.getTo());
+		toAndFrom.add(fromNode);
+		toAndFrom.add(toNode);
+		frame.getANH().updateAllPosition();
+		if(ed.getType().equals("contains")) {
+			for(PiccoloCustomNode p : toAndFrom) {
+				NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
+				newContent.getText().setTextPaint(Color.RED);
+				newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.BOLD, 12));
+				newContent.setOffset(p.getContent().getOffset().getX(),
+						p.getContent().getOffset().getY());
+				newContent.addInputEventListener(new PCustomInputEventHandler(p, frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()));
+				p.setContent(newContent);
+			}
+		}
+		else {
+			if(ed.getType().equals("uses")) {
+				frame.getANH().addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1"));
+			}
+			else {
+				frame.getANH().addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
+			}
+		}
+		frame.getANH().updateAllPosition();
+		
+		PiccoloCustomNode p = null;
+		
+		System.out.println(toNode.getDistanceFromHigherParent());
+		System.out.println(fromNode.getDistanceFromHigherParent());
+		p = (toNode.getDistanceFromHigherParent()>fromNode.getDistanceFromHigherParent()) ? toNode : fromNode;
+		
+		System.out.println(p);
+		while(p.isHidden()) {
+			p.getLastVisibleParent().expandAll();
+		}
+		p.collapseAll();
+
+		PiccoloCustomNode par;
+
+		do {
+			par = p.getParentNode();
+			for(PiccoloCustomNode ch : par.getAllChildren()) {
+				if(!(p.getidNode().equals(ch.getidNode()))) {
+					ch.collapseAll();
+				}
+			}
+			p = p.getParentNode();
+		}while(!(par.getidNode().equals(p.getHigherParent().getidNode())));
+		
 	}
 
 	private void saveWldFile(JEditorPane p) {
@@ -720,7 +811,7 @@ public class GenrationToDisplayMain extends JFrame {
 	
 	}
 
-	private void calculateDependencies() {
+	private void displayDependenciesOnDG() {
 		if(currentWldFile==null) {
 			
 			JOptionPane.showMessageDialog(GenrationToDisplayMain.this,
@@ -746,7 +837,14 @@ public class GenrationToDisplayMain extends JFrame {
 //					JOptionPane.INFORMATION_MESSAGE);
 		
 			
-			
+			try {
+				System.out.println("sleep");
+				Thread.sleep(3000);
+				System.out.println("wake");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	
 			
 			((NewDisplayDG) dgFrame).refreshEdgesDisplay();

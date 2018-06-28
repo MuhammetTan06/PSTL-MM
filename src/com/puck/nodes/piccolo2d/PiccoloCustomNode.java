@@ -509,6 +509,17 @@ public class PiccoloCustomNode extends PNode {
 		getAcendency_REC(out);
 		return out;
 	}
+	
+	public int getDistanceFromHigherParent() {
+		int level = 1;
+		PiccoloCustomNode parent = this.getParentNode();
+		while (!(parent.getName().equals(this.getHigherParent().getName()))) {
+			level++;
+			parent = parent.getParentNode();
+		}
+		return level;
+		
+	}
 
 	private void getAcendency_REC(ArrayList<PiccoloCustomNode> out) {
 		if (getParentNode() == null) {
@@ -544,6 +555,17 @@ public class PiccoloCustomNode extends PNode {
 
 	public void setContent(NodeContent content) {
 		this.content = content;
+	}
+
+	public PiccoloCustomNode getLastVisibleParent() {
+		PiccoloCustomNode parent = getParentNode();
+		
+		if(parent==null)
+			return null;
+		else if(parent.isHidden())
+			return parent.getLastVisibleParent();
+		return parent;
+	
 	}
 
 	
