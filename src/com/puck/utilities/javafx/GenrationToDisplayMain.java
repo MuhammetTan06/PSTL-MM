@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Scanner;
 
 import javax.swing.BorderFactory;
@@ -712,7 +713,8 @@ public class GenrationToDisplayMain extends JFrame {
 	}
 
 	private void showOnlyFocusedDependency(Edge ed) {
-		System.out.println(ed.getId());
+		
+		//cleanAllDependencies
 		NewDisplayDG frame = ((NewDisplayDG)dgFrame);
 		for(PiccoloCustomNode p : frame.getAllPNodes().values()) {
 			System.out.println(p.getName());
@@ -729,10 +731,12 @@ public class GenrationToDisplayMain extends JFrame {
 			
 		}
 		new RemovesHierarchyEdgesOf(frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()).drawOutgoingdges(frame.getRoot(), frame.getCanvas());
-		
+		frame.getANH().updateAllPosition();
+		//display focused dependency
 		displayForbiddenDep(ed);
 		frame.getANH().updateAllPosition();
 		frame.getRoot().setLayout();
+		
 	}
 
 	private void displayForbiddenDep(Edge ed) {
@@ -761,10 +765,24 @@ public class GenrationToDisplayMain extends JFrame {
 				frame.getANH().addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
 			}
 		}
+		
+		PiccoloCustomNode p = null;
+		
+		System.out.println(toNode.getDistanceFromHigherParent());
+		System.out.println(fromNode.getDistanceFromHigherParent());
+		p = (toNode.getDistanceFromHigherParent()>fromNode.getDistanceFromHigherParent()) ? toNode : fromNode;
+		
+		System.out.println(p);
+		while(p.isHidden()) {
+			p.getLastVisibleParent().expandAll();
+		}
+		int it =  p.getParent().getChildrenCount();
+		for(PiccoloCustomNode child : p.getParentNode().getAllChildren() ) {
 			
-			
-			
-			
+			if(!(child.getidNode().equals(p.getidNode()))) {
+				child.collapseAll();
+			}
+		}
 		
 	}
 
