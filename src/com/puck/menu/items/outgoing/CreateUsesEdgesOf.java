@@ -57,12 +57,7 @@ public class CreateUsesEdgesOf extends JMenuItem {
 				if (e.getType().equals("uses")) {
 					PNode from = target;
 					PNode to = (allPNodes.get(e.getTo()));
-					if(NewDisplayDG.getForbiddenEdges().contains(e.getId())) {
-						e.setViolation("1");
-						System.out.println("okok");
-					}
-					else
-						e.setViolation("0");
+					
 					System.out.println("tototo: " + to);
 					System.out.println("ee: "+ allPNodes.size());
 					if (to.getParent() instanceof PiccoloCustomNode
