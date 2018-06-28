@@ -257,6 +257,7 @@ public class NewDisplayDG extends JFrame {
 		}
 		
 		readForbiddenEdges();
+		
 		Collection<Parrow> visibleArrows = this.ANH.getVisibleArrows();
 		
 		new RemovesHierarchyEdgesOf(root, canvas, allPNodes, menu, ANH, listNodes).drawOutgoingdges(root, canvas);

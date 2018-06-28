@@ -24,7 +24,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.BorderFactory;
@@ -50,12 +52,19 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
+import org.piccolo2d.nodes.PText;
 
+import com.puck.arrows.ParrowExtends;
+import com.puck.arrows.ParrowUses;
 import com.puck.display.piccolo2d.NewDisplayDG;
+import com.puck.menu.items.removing.RemovesHierarchyEdgesOf;
 import com.puck.nodes.piccolo2d.Edge;
+import com.puck.nodes.piccolo2d.NodeContent;
+import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.refactoring.ExecuteRefactoringPlan;
 import com.puck.refactoring.RefactoringCommands;
 import com.puck.undoRedo.StateChanger2;
+import com.puck.utilities.piccolo2d.PCustomInputEventHandler;
 import com.sun.deploy.uitoolkit.impl.fx.Utils;
 
 import java.awt.TextArea;
@@ -77,6 +86,8 @@ public class GenrationToDisplayMain extends JFrame {
 	private RunCommand runCommand;
 	private File currentWldFile;
 	private JFrame dependencyManagerFrame;
+	private JLayeredPane zoomOnDependencyFrame;
+	private JSplitPane splitPane;
 	
 
 	
@@ -120,7 +131,7 @@ public class GenrationToDisplayMain extends JFrame {
 		
 
 		
-		jarPathText = new JTextField("C:\\Users\\Momoche\\Desktop\\projetStage\\puck2-master-new\\puck2.jar");
+		jarPathText = new JTextField(System.getProperty("user.dir")+"\\puck2.jar");
 		jarPathText.setBounds(112, 6, 571, 33);
 		panel_conf.add(jarPathText);
 		jarPathText.setColumns(30);
@@ -137,7 +148,7 @@ public class GenrationToDisplayMain extends JFrame {
 		jarButton.setBounds(680, 6, 68, 33);
 		panel_conf.add(jarButton);
 
-		projetPathText = new JTextField("C:\\Users\\Momoche\\eclipse-workspace\\test");
+		projetPathText = new JTextField(System.getProperty("user.dir")+"\\projectTest");
 		projetPathText.setBounds(112, 44, 571, 33);
 		panel_conf.add(projetPathText);
 		projetPathText.setColumns(30);
@@ -374,41 +385,25 @@ public class GenrationToDisplayMain extends JFrame {
 
 			canvas.setPreferredSize(new Dimension(1000, 500));
 
-			JLayeredPane internalFrame1 = new JLayeredPane();
+			zoomOnDependencyFrame = new JLayeredPane();
 			Dimension frameSize = new Dimension(1000, 700);
 			Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
 			dgFrame.setPreferredSize(frameSize);
-            internalFrame1.setVisible(true);
-            double a = 1.3;
-            JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, internalFrame1);
-            jsp.setOneTouchExpandable(true);
+            zoomOnDependencyFrame.setVisible(true);
+            splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, zoomOnDependencyFrame);
+            splitPane.setOneTouchExpandable(true);
             System.out.println(dgFrame.getPreferredSize().getWidth());
-            jsp.setDividerLocation((int)(frameSize.getWidth()));
+            splitPane.setDividerLocation((int)(frameSize.getWidth()));
             
-            Collection<Edge> forbEdges = ((NewDisplayDG) dgFrame).getForbiddenEdges();
-            int offsetY = 20;
-            for (Edge e : forbEdges) {
-            	JButton bt = new JButton(e.getFrom() + " - " + e.getTo());
-            	bt.setBounds(0, 0, 100, 50);
-            	internalFrame1.add(bt);
-            	bt.setLocation(100, offsetY+=20);
-            	bt.setVisible(true);
-            	bt.addActionListener(new ActionListener() {
-					
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						
-					}
-				});
-            }
+          
           
             // Jframe Container
             Container container = dgFrame.getContentPane();
             container.setLayout(new BorderLayout());
-            container.add(jsp, BorderLayout.CENTER);
+            container.add(splitPane, BorderLayout.CENTER);
             container.add(toolBar, BorderLayout.PAGE_START);
     
-            dgFrame.add(jsp, BorderLayout.CENTER);
+//            dgFrame.add(jsp, BorderLayout.CENTER);
             
 			dgFrame.setLocation((int)(screenSize.getWidth()/2) - (int)(frameSize.getWidth()/2), (int)(screenSize.getHeight()/2) - (int)(frameSize.getHeight()/2));
 			dgFrame.pack();
@@ -622,7 +617,9 @@ public class GenrationToDisplayMain extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveWldFile(editorPane1);
-				calculateDependencies();
+				displayDependenciesOnDG();
+				
+				showForbiddenDependencies();
 				Dimension dialogSize = new Dimension(500, 100);
 				Dimension screenSize = new Dimension(Toolkit.getDefaultToolkit().getScreenSize());
 				
@@ -687,6 +684,90 @@ public class GenrationToDisplayMain extends JFrame {
 		
 	}
 	
+	private void showForbiddenDependencies() {
+		zoomOnDependencyFrame.removeAll();
+		 splitPane.setDividerLocation((int)(dgFrame.getWidth()/2));
+		 Collection<Edge> forbEdges = ((NewDisplayDG) dgFrame).getForbiddenEdges();
+         int offsetY = 20;
+         for (Edge ed : forbEdges) {
+         	JButton bt = new JButton();
+         	bt.setText("Edge type : "+ed.getType()+ " | " + " from : "+((NewDisplayDG)dgFrame).getAllPNodes().get(ed.getFrom())
+         			+ ", to : " + ((NewDisplayDG)dgFrame).getAllPNodes().get(ed.getTo())+ " (id edge : "+ed.getId()+")");
+         	bt.setBounds(0, 0, 500, 40);
+         	bt.setPreferredSize(new Dimension(500, 40));
+         	zoomOnDependencyFrame.add(bt);
+         	
+         	bt.setLocation((int)(zoomOnDependencyFrame.getWidth()/3), (int)(zoomOnDependencyFrame.getHeight()*10/100) + offsetY);
+         	offsetY+=42;
+         	bt.setVisible(true);
+         	System.out.println(bt.getLocation().getX());
+         	bt.addActionListener(new ActionListener() {
+				
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						showOnlyFocusedDependency(ed);
+					}
+				});
+         }
+	}
+
+	private void showOnlyFocusedDependency(Edge ed) {
+		System.out.println(ed.getId());
+		NewDisplayDG frame = ((NewDisplayDG)dgFrame);
+		for(PiccoloCustomNode p : frame.getAllPNodes().values()) {
+			System.out.println(p.getName());
+			NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
+			
+			newContent.getText().setTextPaint(Color.BLACK);
+			newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.PLAIN, 12));
+			
+			newContent.setOffset(p.getContent().getOffset().getX(),
+					p.getContent().getOffset().getY());
+			newContent.addInputEventListener(new PCustomInputEventHandler(p, frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()));
+			
+			p.setContent(newContent);
+			
+		}
+		new RemovesHierarchyEdgesOf(frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()).drawOutgoingdges(frame.getRoot(), frame.getCanvas());
+		
+		displayForbiddenDep(ed);
+		frame.getANH().updateAllPosition();
+		frame.getRoot().setLayout();
+	}
+
+	private void displayForbiddenDep(Edge ed) {
+		NewDisplayDG frame = ((NewDisplayDG)dgFrame);
+		List<PiccoloCustomNode> toAndFrom = new ArrayList<PiccoloCustomNode>();
+		PiccoloCustomNode fromNode = frame.getAllPNodes().get(ed.getFrom());
+		PiccoloCustomNode toNode = frame.getAllPNodes().get(ed.getTo());
+		toAndFrom.add(fromNode);
+		toAndFrom.add(toNode);
+		if(ed.getType().equals("contains")) {
+			for(PiccoloCustomNode p : toAndFrom) {
+				NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
+				newContent.getText().setTextPaint(Color.RED);
+				newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.BOLD, 12));
+				newContent.setOffset(p.getContent().getOffset().getX(),
+						p.getContent().getOffset().getY());
+				newContent.addInputEventListener(new PCustomInputEventHandler(p, frame.getRoot(), frame.getCanvas(), frame.getAllPNodes(), frame.getMenu(), frame.getANH(), frame.getListNodes()));
+				p.setContent(newContent);
+			}
+		}
+		else {
+			if(ed.getType().equals("uses")) {
+				frame.getANH().addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1"));
+			}
+			else {
+				frame.getANH().addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
+			}
+		}
+			
+			
+			
+			
+		
+	}
+
 	private void saveWldFile(JEditorPane p) {
 		String str = p.getText();
 		try {
@@ -702,7 +783,7 @@ public class GenrationToDisplayMain extends JFrame {
 	
 	}
 
-	private void calculateDependencies() {
+	private void displayDependenciesOnDG() {
 		if(currentWldFile==null) {
 			
 			JOptionPane.showMessageDialog(GenrationToDisplayMain.this,
@@ -728,7 +809,14 @@ public class GenrationToDisplayMain extends JFrame {
 //					JOptionPane.INFORMATION_MESSAGE);
 		
 			
-			
+			try {
+				System.out.println("sleep");
+				Thread.sleep(3000);
+				System.out.println("wake");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	
 			
 			((NewDisplayDG) dgFrame).refreshEdgesDisplay();
