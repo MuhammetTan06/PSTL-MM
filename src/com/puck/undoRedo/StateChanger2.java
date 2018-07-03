@@ -6,26 +6,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import javax.swing.JFrame;
+
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
+import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.Node;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.refactoring.RefactoringCommands;
 import com.puck.utilities.piccolo2d.PCustomInputEventHandler;
 
 public class StateChanger2 implements Changeable{
-	private HashMap<String, PiccoloCustomNode> allPNodes;
+	
+	private NewDisplayDG frame;
 	private ArrowNodesHolder ANH;
-	private PSwingCanvas canvas;
 	private Stack<State> editedState; 
 	private int position;
-	private PiccoloCustomNode root;
-	private Map<String, Node> listNodes;
-	private Menu menu;
 	private State currentState;
 	private  StringBuilder refactoringCommands;
+	private Collection<Edge> forbiddenEdges;
 	
 	private StateChanger2() {
 		super();
@@ -34,16 +36,10 @@ public class StateChanger2 implements Changeable{
 	 public static StateChanger2 getInstance()
 	    {   return INSTANCE;
 	    }
-	public void init(HashMap<String, PiccoloCustomNode> allPNodes,ArrowNodesHolder ANH,PSwingCanvas canvas,PiccoloCustomNode root,
-			Map<String, Node> listNodes, Menu menu, StringBuilder refactoringCommands) {
-		this.allPNodes = allPNodes;
-		this.ANH = ANH;
-		this.canvas = canvas;
+	public void init(JFrame f, StringBuilder refactoringCommands) {
+		this.frame = (NewDisplayDG)f;
 		this.editedState = new  Stack<State>();
 		this.position = 0;
-		this.root = root;
-		this.listNodes = listNodes;
-		this.menu = menu;
 		this.refactoringCommands = refactoringCommands;
 		//System.err.println("ref"+refactoringCommands.hashCode());
 	}
@@ -56,26 +52,26 @@ public class StateChanger2 implements Changeable{
 			System.err.println("undo");
 			State previousState = editedState.get(position);
 			currentState = previousState;
-			allPNodes.clear();
-			allPNodes.putAll(previousState.getAllPNodes());
+			this.frame.getAllPNodes().clear();
+			this.frame.getAllPNodes().putAll(previousState.getAllPNodes());
 			
-			ANH = previousState.getANH();
+			this.ANH = previousState.getANH();
 			RefactoringCommands.getInstance().setXmlString(previousState.getRefactoringCommands());
-			root.removeAllChildren();
-			root.getAllChildren().clear();
-			root.getHiddenchildren().clear();
+			this.frame.getRoot().removeAllChildren();
+			this.frame.getRoot().getAllChildren().clear();
+			this.frame.getRoot().getHiddenchildren().clear();
 			Collection<PiccoloCustomNode> children = previousState.getRoot().getAllChildren();
-			root.setChilldren(new ArrayList<>(children));
+			this.frame.getRoot().setChilldren(new ArrayList<>(children));
 			//root.setHiddenchildren(previousState.getRoot().getHiddenchildren());	
-			addEvent(root, root, canvas, menu, listNodes);
-			System.out.println(allPNodes.hashCode());
-			root.setLayout();
+			addEvent(this.frame.getRoot(), this.frame.getRoot(), this.frame.getCanvas(), this.frame.getMenu(), this.frame.getListNodes());
+			System.out.println(this.frame.getAllPNodes().hashCode());
+			this.frame.getRoot().setLayout();
 		}
 
 	}
 
 	public PiccoloCustomNode getRoot() {
-		return this.root;
+		return this.frame.getRoot();
 	}
 
 	@Override
@@ -87,21 +83,21 @@ public class StateChanger2 implements Changeable{
 			System.out.println("redo");
 			State nextState = editedState.get(position);
 			currentState = nextState;
-			allPNodes.clear();
-			allPNodes.putAll(nextState.getAllPNodes());
+			this.frame.getAllPNodes().clear();
+			this.frame.getAllPNodes().putAll(nextState.getAllPNodes());
 			
 			ANH = nextState.getANH();
 			RefactoringCommands.getInstance().setXmlString(nextState.getRefactoringCommands());
 
-			root.removeAllChildren();
-			root.getAllChildren().clear();
-			root.getHiddenchildren().clear();
+			this.frame.getRoot().removeAllChildren();
+			this.frame.getRoot().getAllChildren().clear();
+			this.frame.getRoot().getHiddenchildren().clear();
 			
-			root.setChilldren(new ArrayList<>(nextState.getRoot().getAllChildren()));
+			this.frame.getRoot().setChilldren(new ArrayList<>(nextState.getRoot().getAllChildren()));
 			//root.setHiddenchildren(nextState.getRoot().getHiddenchildren());
-			addEvent(root, root, canvas, menu, listNodes);
+			addEvent(this.frame.getRoot(), this.frame.getRoot(), this.frame.getCanvas(), this.frame.getMenu(), this.frame.getListNodes());
 
-			root.setLayout();
+			this.frame.getRoot().setLayout();
 		}
 
 	}
@@ -128,11 +124,11 @@ public class StateChanger2 implements Changeable{
 	}
 
 	public HashMap<String, PiccoloCustomNode> getAllPNodes() {
-		return allPNodes;
+		return this.frame.getAllPNodes();
 	}
 
 	public void setAllPNodes(HashMap<String, PiccoloCustomNode> allPNodes) {
-		this.allPNodes = allPNodes;
+		this.frame.setAllPNodes(allPNodes);
 	}
 
 	public ArrowNodesHolder getANH() {
@@ -144,16 +140,16 @@ public class StateChanger2 implements Changeable{
 	}
 
 	public PSwingCanvas getCanvas() {
-		return canvas;
+		return this.frame.getCanvas();
 	}
 
 	public void setCanvas(PSwingCanvas canvas) {
-		this.canvas = canvas;
+		this.frame.setCanvas(canvas);
 	}
 	
 	private void addEvent(PiccoloCustomNode node, PiccoloCustomNode tree,PSwingCanvas canvas,Menu menu,Map<String, Node> listNodes) {
 		if (node.getidNode() != "r01") 
-		node.getContent().getText().addInputEventListener(new PCustomInputEventHandler(node, tree, canvas, allPNodes,menu,ANH,listNodes));
+		node.getContent().getText().addInputEventListener(new PCustomInputEventHandler(this.frame, node));
 		if (node.getAllChildren().size() != 0)
 			for (PiccoloCustomNode PCN : node.getAllChildren()) {
 				addEvent(PCN, tree,canvas,menu,listNodes);

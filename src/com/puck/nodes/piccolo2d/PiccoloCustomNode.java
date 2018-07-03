@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import org.piccolo2d.PCanvas;
 import org.piccolo2d.PNode;
@@ -372,9 +373,11 @@ public class PiccoloCustomNode extends PNode {
 			}
 
 			removeChild(rect);
+			System.out.println(this + " " + x + " " + y);
 			rect = PPath.createRectangle(x, y, maxWidth, h+ maxHeight + margin);
 			rect = bevelIn(rect, 0);
 
+			
 			addChild(rect);
 			addChild(content);
 			addChildren(getChildren());
@@ -566,6 +569,16 @@ public class PiccoloCustomNode extends PNode {
 			return parent.getLastVisibleParent();
 		return parent;
 	
+	}
+	
+	public boolean isCollapsed() {
+		List<PiccoloCustomNode> children = new ArrayList<PiccoloCustomNode>(this.getAllChildren());
+		
+		for(PiccoloCustomNode p : this.getAllChildren()) {
+			if(!p.isHidden())
+				return false;
+		}
+		return true;
 	}
 
 	

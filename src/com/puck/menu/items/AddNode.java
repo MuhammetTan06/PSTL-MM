@@ -9,13 +9,16 @@ import java.util.Stack;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
+import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.Node;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.undoRedo.Changeable;
@@ -25,30 +28,22 @@ import com.puck.utilities.NodeType;
 import com.puck.utilities.piccolo2d.PCustomInputEventHandler;
 
 public class AddNode extends JMenuItem {
-	private HashMap<String, PiccoloCustomNode> allPNodes;
-	private Map<String, Node> listNodes;
+	
 	private PiccoloCustomNode pnode;
-	private PSwingCanvas canvas;
-	private Menu menu;
-	private ArrowNodesHolder ANH;
 	private NodeType nodeType;
 	private Changeable state;
-	private PiccoloCustomNode root;
 	private Collection<PiccoloCustomNode> children;
+	private NewDisplayDG frame;
 
-	public AddNode(PiccoloCustomNode pnode, PSwingCanvas canvas, HashMap<String, PiccoloCustomNode> allPNodes,
-			Menu menu, ArrowNodesHolder ANH, Map<String, Node> listNodes, NodeType nodeType, Changeable state) {
+	
+	public AddNode(JFrame f, PiccoloCustomNode pnode, NodeType nodeType, Changeable state) {
 		super("Add " + nodeType, new ImageIcon("images/add.png"));
-		this.allPNodes = allPNodes;
+		this.frame = (NewDisplayDG)f;
+		
 		this.pnode = pnode;
-		this.canvas = canvas;
-		this.menu = menu;
-		this.ANH = ANH;
-		this.listNodes = listNodes;
 		this.nodeType = nodeType;
 		this.state = state;
-		root = pnode.getHigherParent();
-		children = pnode.getChildren();
+		this.children = pnode.getChildren();
 		addActionListener();
 	}
 
@@ -69,14 +64,14 @@ public class AddNode extends JMenuItem {
 	}
 
 	public void addNodeToParent(PiccoloCustomNode nodeToAdd, String name) {
-		PiccoloCustomNode root_atpre = PiccoloCustomNode.newInstance(root);
+		PiccoloCustomNode root_atpre = PiccoloCustomNode.newInstance(this.frame.getRoot());
 	
 		
 		
 		nodeToAdd.setName(name);
 		nodeToAdd.setParentNode(pnode);
 		nodeToAdd.getContent().getText().addInputEventListener(
-				new PCustomInputEventHandler(nodeToAdd, root, canvas, allPNodes, menu, ANH, listNodes));
+				new PCustomInputEventHandler(frame, nodeToAdd));
 		children.add(nodeToAdd);
 		pnode.setChilldren(children);
 		pnode.showChildren();
@@ -87,11 +82,11 @@ public class AddNode extends JMenuItem {
 		StateChanger2.getInstance().setAddedPnodes(editedState);
 		
 		
-		allPNodes.put(nodeToAdd.getidNode(), nodeToAdd);
+		this.frame.getAllPNodes().put(nodeToAdd.getidNode(), nodeToAdd);
 
-		root.setLayout();
+		this.frame.getRoot().setLayout();
 		//root.showChildren();
-		ANH.updateAllPosition();
+		this.frame.getANH().updateAllPosition();
 		
 	//	State currentState = new State(copy(), ANH, canvas,PiccoloCustomNode.newInstance(root));
 		editedState = StateChanger2.getInstance().getAddedPnodes();
@@ -108,14 +103,15 @@ public class AddNode extends JMenuItem {
 				  if(nodeName==null||nodeName.equals(""))
 			            return;
 				  
-				  addNode(pnode, canvas,nodeName);
+				  addNode(pnode, frame.getCanvas(),nodeName);
 			}
 		});
 	}
 	
+	
 	public HashMap<String, PiccoloCustomNode>  copy() {
 		HashMap<String, PiccoloCustomNode> allPNodes_atPre = new HashMap<>();
-		for(Map.Entry<String, PiccoloCustomNode> node : allPNodes.entrySet()) {
+		for(Map.Entry<String, PiccoloCustomNode> node : this.frame.getAllPNodes().entrySet()) {
 			PiccoloCustomNode copy = PiccoloCustomNode.newInstance(node.getValue());
 			Collection<PiccoloCustomNode> hide_atPre = new ArrayList<>(node.getValue().getHiddenchildren());
 			copy.setHiddenchildren(hide_atPre);

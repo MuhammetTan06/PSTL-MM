@@ -25,6 +25,7 @@ public class ParrowUses extends Parrow{
 		to = virtualTo;
 		
 		TriangleHollow head = null;
+		
 		line = PPath.createLine(from.getX(), from.getY(), to.getX(), to.getY());
 		
 		
@@ -40,10 +41,6 @@ public class ParrowUses extends Parrow{
 			head = new TriangleHollow(Color.BLACK);
 		}
 	
-		
-		
-		
-		
 		double theta = Math.atan2(to.getY() - from.getY(), to.getX() - from.getX()) + Math.toRadians(90);
 		head.translate(to.getX(), to.getY());
 		head.rotate(theta);
@@ -51,7 +48,7 @@ public class ParrowUses extends Parrow{
 		addChild(head);	
     }
 
-    public ParrowUses(PNode from, PNode to,double spacing,PNode virtualForm,PNode virtualTo, String edgeViolation){
+    public ParrowUses(PNode from, PNode to, double spacing, PNode virtualForm, PNode virtualTo, String edgeViolation){
         this(((PiccoloCustomNode)from).getRect().getGlobalBounds().getCenter2D(),
         		((PiccoloCustomNode)to).getRect().getGlobalBounds().getCenter2D(),
         		spacing,

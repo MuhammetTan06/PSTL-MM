@@ -4,18 +4,26 @@ package com.puck.utilities.piccolo2d;
 
 
 import java.awt.event.InputEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 
 import org.piccolo2d.event.PBasicInputEventHandler;
 import org.piccolo2d.event.PInputEvent;
 import org.piccolo2d.event.PInputEventFilter;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
+import org.piccolo2d.nodes.PText;
 
 import com.puck.arrows.ArrowNodesHolder;
 import com.puck.arrows.Parrow;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
 import com.puck.menu.items.AddNode;
 import com.puck.menu.items.CollapseAll;
@@ -29,6 +37,7 @@ import com.puck.menu.items.outgoing.CreateEdgesOf;
 import com.puck.menu.items.outgoing.CreateEgdesHierarchyOf;
 import com.puck.menu.items.removing.RemoveEdgesOf;
 import com.puck.menu.items.removing.RemovesHierarchyEdgesOf;
+import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.Node;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.undoRedo.Changeable;
@@ -37,18 +46,12 @@ import com.puck.utilities.NodeType;
 
 public class PCustomInputEventHandler extends PBasicInputEventHandler {
 	private PiccoloCustomNode pnode;
-	private PiccoloCustomNode root;
-	private PSwingCanvas canvas;
-	private HashMap<String, PiccoloCustomNode> allPNodes;
-	private Menu menu;
 	private JMenuItem createEdgesOf;
 	private JMenuItem createEdgesBy;
 	private JMenuItem removeEdgesOf;
 	private JMenuItem createEgdesHierarchyBy;
 	private JMenuItem createEgdesHierarchyOf;
 	private JMenuItem removesHierarchyEdgesOf;
-	private Map<String, Node> listNodes;
-	private ArrowNodesHolder ANH;
 	private HideNode hideNode ;
 	private FocusNode focusNode;
 	private ExpandAll expandAll;
@@ -57,32 +60,30 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 	private JMenuItem addPackage;
 	private JMenuItem renameNode;
 	private Changeable state;
-	public PCustomInputEventHandler(PiccoloCustomNode pnode, PiccoloCustomNode root, PSwingCanvas canvas,
-			Map<String, PiccoloCustomNode> allPNodes, Menu menu, ArrowNodesHolder ANH, Map<String, Node> listNodes) {
+	private NewDisplayDG frame;
+	private int HashSet;
+	private int Edge;
+	
+	
+	public PCustomInputEventHandler(JFrame frame, PiccoloCustomNode pnode) {
 		setEventFilter(new PInputEventFilter(InputEvent.BUTTON1_MASK & InputEvent.BUTTON2_MASK));
+		this.frame = (NewDisplayDG)frame;
 		this.pnode = pnode;
-		this.canvas = canvas;
-		this.root = root;
-		this.allPNodes = (HashMap<String, PiccoloCustomNode>) allPNodes;
-		this.menu = menu;
-		this.ANH = ANH;
-		this.listNodes = listNodes;
-		createEdgesOf = new CreateEdgesOf(pnode, canvas, this.allPNodes, menu,ANH,this.listNodes);
-		removeEdgesOf = new RemoveEdgesOf(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
-		createEdgesBy = new CreateEdgesBy(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
-		createEgdesHierarchyBy = new CreateEgdesHierarchyBy(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
-		createEgdesHierarchyOf = new CreateEgdesHierarchyOf(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
-		removesHierarchyEdgesOf = new RemovesHierarchyEdgesOf(pnode, canvas, this.allPNodes, menu, ANH, listNodes);
-		hideNode = new HideNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes);
-		focusNode = new FocusNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes);
-		expandAll = new ExpandAll(pnode, canvas, this.allPNodes, menu, ANH, listNodes);
-		collapseAll = new CollapseAll(pnode, canvas, this.allPNodes, menu, ANH, listNodes);
-		state = StateChanger.getInstance();
-		addClass = new AddNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, NodeType.CLASS, state);
-		addPackage =  new AddNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, NodeType.PACKAGE, state);
-		renameNode = new RenameNode(pnode, canvas, this.allPNodes, menu, ANH, listNodes, state);
+		this.createEdgesOf = new CreateEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(),this.frame.getListNodes());
+		this.removeEdgesOf = new RemoveEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.createEdgesBy = new CreateEdgesBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.createEgdesHierarchyBy = new CreateEgdesHierarchyBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.createEgdesHierarchyOf = new CreateEgdesHierarchyOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.removesHierarchyEdgesOf = new RemovesHierarchyEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.hideNode = new HideNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.focusNode = new FocusNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.expandAll = new ExpandAll(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.collapseAll = new CollapseAll(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.state = StateChanger.getInstance();
+		this.addClass = new AddNode(this.frame, pnode, NodeType.CLASS, state);
+		this.addPackage =  new AddNode(this.frame, pnode, NodeType.PACKAGE, state);
+		this.renameNode = new RenameNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes(), this.state);
 		
-		System.out.println("PCustom L 85 - " + this.allPNodes);
 	}
 
 	public PCustomInputEventHandler(PiccoloCustomNode pnode) {
@@ -95,16 +96,32 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		
 		try {
 			if (aEvent.isLeftMouseButton()) {
+				
 				pnode.toggleChildren();
+				
+				this.frame.getRoot().setLayout();
+				
+				
+				//
+				if(this.frame.getForbiddenEdges().size()!=0)
+					this.frame.drawForbiddenDependencyCounters();
+				
+				this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
+				this.frame.getRoot().setLayout();
+				
+				System.out.println("\n");
+				
+				
+				//
+				
 				//System.out.println(pnode.isHidden());
-				root.setLayout();
-				root.updateContentBoundingBoxes(false, canvas);
-				for (Parrow arrow : ANH.getVisibleArrows()) {
-					ANH.updatePosition(arrow);
+				
+				for (Parrow arrow : this.frame.getANH().getVisibleArrows()) {
+					this.frame.getANH().updatePosition(arrow);
 				}
 			}
 			if (aEvent.isRightMouseButton()) {
-					generateMenu(menu,aEvent);		
+					generateMenu(this.frame.getMenu(),aEvent);		
 					
 
 			}
@@ -113,6 +130,8 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		}
 
 	}
+	
+	
 	
 	public void generateMenu(Menu menu,PInputEvent aEvent) {
 		menu.removeAll();
@@ -139,7 +158,7 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		menu.add(renameNode);
 	
 		menu.setPoint(aEvent.getPosition());
-		menu.setCanvas(canvas);
+		menu.setCanvas(this.frame.getCanvas());
 	}
 //	public boolean menuContainsPoint(Menu menu, Point point) {
 //		PBounds bounds = menu.getP().getGlobalFullBounds();
