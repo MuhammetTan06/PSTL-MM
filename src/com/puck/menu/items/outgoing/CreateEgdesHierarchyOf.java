@@ -35,7 +35,6 @@ public class CreateEgdesHierarchyOf extends JMenuItem{
 		this.menu = menu;
 		this.ANH = ANH;
 		this.listNodes = listNodes;
-		
 		createEdgesOf = new CreateEdgesOf(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
 		addActionListener();
 	}

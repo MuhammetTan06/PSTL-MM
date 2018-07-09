@@ -96,6 +96,11 @@ public class GenrationToDisplayMain extends JFrame {
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
 	// Generated using JFormDesigner Evaluation license - Muhammet Tan
 
+	public static void main(String[] args) {
+		JFrame frame = new GenrationToDisplayMain();
+		frame.pack();
+		frame.setVisible(true);
+	}
 
 	public GenrationToDisplayMain() {
 		setTitle("Display");
@@ -178,7 +183,7 @@ public class GenrationToDisplayMain extends JFrame {
 					while (runCommand.getWriter() == null) {}
 					runCommand.sendCommand("saveGraph DependecyGraph.xml");
 					while(writingDone == false) {
-						System.out.println("Waiting DG xml File");
+						System.out.println("");
 					}
 					init(new String[] {});
 					writingDone = false;
@@ -186,7 +191,7 @@ public class GenrationToDisplayMain extends JFrame {
 					
 					checkForWLDFile();
 					
-					setState(JFrame.ICONIFIED);
+					//setState(JFrame.ICONIFIED);
 					
 
 				} catch (Exception e1) {
@@ -223,7 +228,6 @@ public class GenrationToDisplayMain extends JFrame {
 			}
 		});
 		if(wldFiles.length==0) {
-			System.out.println("No .wld file found ... ");
 			Object[] opt = { "yes", "no"};
 			int result = JOptionPane.showOptionDialog(GenrationToDisplayMain.this,
 					"Do you want to load a .wld file?" ,
@@ -243,14 +247,21 @@ public class GenrationToDisplayMain extends JFrame {
 				int resultValue = chooser.showOpenDialog(GenrationToDisplayMain.this);
 				if(resultValue == JFileChooser.APPROVE_OPTION) {
 					currentWldFile = chooser.getSelectedFile();
+					((NewDisplayDG)dgFrame).getRoot().expandAll();
+					((NewDisplayDG)dgFrame).getRoot().setLayout();
+					displayDependenciesOnDG();
+					showForbiddenDependencies();
 				}
 			}
 			
 				
 		}
 		else if(wldFiles.length==1) {
-			System.out.println("fichier "+wldFiles[0].getName()+" found");
 			currentWldFile = wldFiles[0];
+			((NewDisplayDG)dgFrame).getRoot().expandAll();
+			((NewDisplayDG)dgFrame).getRoot().setLayout();
+			displayDependenciesOnDG();
+			showForbiddenDependencies();
 		}
 		else {
 			JFileChooser chooser = new JFileChooser();
@@ -262,6 +273,10 @@ public class GenrationToDisplayMain extends JFrame {
 			int resultValue = chooser.showOpenDialog(GenrationToDisplayMain.this);
 			if(resultValue == JFileChooser.APPROVE_OPTION) {
 				currentWldFile = chooser.getSelectedFile();
+				((NewDisplayDG)dgFrame).getRoot().expandAll();
+				((NewDisplayDG)dgFrame).getRoot().setLayout();
+				displayDependenciesOnDG();
+				showForbiddenDependencies();
 			}
 		}
 	}
@@ -284,6 +299,7 @@ public class GenrationToDisplayMain extends JFrame {
 		JButton impor = new JButton("LOAD-refactoring Plan");
 		JButton generate = new JButton("Generate code source");
 		JButton dependenciesManager = new JButton("Manage Dependencies");
+		JButton showLauncherFrame = new JButton("Load new ");
 		
 		undo.setSize(40, 40);
 		JToolBar toolBar = new JToolBar();
@@ -392,10 +408,8 @@ public class GenrationToDisplayMain extends JFrame {
             zoomOnDependencyFrame.setVisible(true);
             splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, zoomOnDependencyFrame);
             splitPane.setOneTouchExpandable(true);
-            System.out.println(dgFrame.getPreferredSize().getWidth());
             splitPane.setDividerLocation((int)(frameSize.getWidth()));
             
-          
           
             // Jframe Container
             Container container = dgFrame.getContentPane();
@@ -403,12 +417,13 @@ public class GenrationToDisplayMain extends JFrame {
             container.add(splitPane, BorderLayout.CENTER);
             container.add(toolBar, BorderLayout.PAGE_START);
     
-//            dgFrame.add(jsp, BorderLayout.CENTER);
+//          dgFrame.add(jsp, BorderLayout.CENTER);
             
 			dgFrame.setLocation((int)(screenSize.getWidth()/2) - (int)(frameSize.getWidth()/2), (int)(screenSize.getHeight()/2) - (int)(frameSize.getHeight()/2));
 			dgFrame.pack();
-			dgFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+//			dgFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 			dgFrame.setVisible(true);
+			dgFrame.setFocusable(true);
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -416,11 +431,7 @@ public class GenrationToDisplayMain extends JFrame {
 		return dgFrame;
 	}
 
-	public static void main(String[] args) {
-		JFrame frame = new GenrationToDisplayMain();
-		frame.pack();
-		frame.setVisible(true);
-	}
+
 
 	public class RunCommand extends Thread {
 		private ProcessBuilder processBuilder;
@@ -449,7 +460,7 @@ public class GenrationToDisplayMain extends JFrame {
 				while (scanner.hasNextLine()) {
 					String line = scanner.nextLine();
 					puck2StdOut.append(line +"\n");
-					System.out.println(line);
+					
 					if (line.trim().equals("DONE")) {
 						writingDone = true;
 					}
@@ -531,7 +542,7 @@ public class GenrationToDisplayMain extends JFrame {
 		}
 		
 		editorPane1.setText(str.toString());
-		//======== this ========
+		
 		dependencyManagerFrame.setTitle("Dependencies Manager");
 		dependencyManagerFrame.setForeground(Color.black);
 		Dimension frameDim = new Dimension(700, 450);
@@ -541,57 +552,37 @@ public class GenrationToDisplayMain extends JFrame {
 		dependencyManagerFrame.setLocation((int)(screenSize.getWidth()/2 - frameDim.getWidth()/2), (int)(screenSize.getHeight()/2 - frameDim.getHeight()/2));
 			
 		
-//		addMouseListener(new MouseAdapter() {
-//			@Override
-//			public void addActionListener(ActionListener e) {
-//				actionPerformed(e);
-//			}
-//		});
 		Container contentPane = dependencyManagerFrame.getContentPane();
 		contentPane.setLayout(null);
 		contentPane.setPreferredSize(new Dimension(445, 300));
 
-		//---- label1 ----
 				String nameWldFile = currentWldFile==null?"none":currentWldFile.getName();
 				label1.setText("Current .wld file : "+ nameWldFile);
 				
 				contentPane.add(label1);
 				label1.setBounds(20, 360, 255, 30);
 
-				//---- button1 ----
 				button1.setText("Load wld file");
 				button1.setBackground(Color.white);
 				contentPane.add(button1);
 				int parentWidth = (int) dependencyManagerFrame.getWidth();
 				int parentHeight = (int) dependencyManagerFrame.getHeight();
 				
-				System.out.println("parentWidht : "+ parentHeight);
 				button1.setBounds(0, 0, 185, 35);
 				button1.setLocation(parentWidth*18/100, parentHeight*70/100);
 				
 
-				//---- button2 ----
 				button2.setText("Save modifications");
 				button2.setBackground(Color.white);
 				contentPane.add(button2);
 				button2.setBounds(0, 0, 185, 35);
 				button2.setLocation(parentWidth- parentWidth*18/100 - button2.getWidth() - 17, parentHeight*70/100);
 
-				//======== scrollPane1 ========
-				{
-					scrollPane1.setViewportView(editorPane1);
-				}
-				contentPane.add(scrollPane1);
+				scrollPane1.setViewportView(editorPane1);
 				scrollPane1.setBounds(70, 25, 535, 275);
-
+				contentPane.add(scrollPane1);
 				
 				
-
-		
-
-		
-		
-		
 		
 		button1.addActionListener(new ActionListener() {
 			
@@ -681,9 +672,6 @@ public class GenrationToDisplayMain extends JFrame {
 			
 		});
 	
-		
-		// JFormDesigner - End of component initialization  //GEN-END:initComponents
-		
 	}
 	
 	private void showForbiddenDependencies() {
@@ -734,6 +722,7 @@ public class GenrationToDisplayMain extends JFrame {
 			
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					((NewDisplayDG)dgFrame).readForbiddenEdges();
 					((NewDisplayDG)dgFrame).refreshDisplay();				
 				}
 			});
@@ -754,7 +743,6 @@ public class GenrationToDisplayMain extends JFrame {
          	bt.setLocation((int)(zoomOnDependencyFrame.getWidth()/3), (int)(zoomOnDependencyFrame.getHeight()*10/100) + offsetY);
          	offsetY+=42;
          	bt.setVisible(true);
-         	System.out.println(bt.getLocation().getX());
          	bt.addActionListener(new ActionListener() {
 				
 					@Override
@@ -784,6 +772,7 @@ public class GenrationToDisplayMain extends JFrame {
 	private void displayDependenciesOnDG() {
 		
 		executeConstraintChecker();	
+		((NewDisplayDG) dgFrame).getRoot().updateContentBoundingBoxes(false, ((NewDisplayDG) dgFrame).getCanvas());
 		
 		((NewDisplayDG) dgFrame).readForbiddenEdges();
 			

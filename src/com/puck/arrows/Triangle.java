@@ -1,6 +1,7 @@
 package com.puck.arrows;
 
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 
 import org.piccolo2d.PNode;
@@ -12,9 +13,10 @@ public class Triangle extends PNode{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public Triangle(Color color){
+	public Triangle(Color color, int thickness){
         PPath t = new PPath.Float();
         t.moveTo(0,0);
+        t.setStroke(new BasicStroke(thickness));
         t.lineTo(-5,5);
         t.lineTo(5,5);
         t.lineTo(0,0);

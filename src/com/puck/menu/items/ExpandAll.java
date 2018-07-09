@@ -35,7 +35,6 @@ public class ExpandAll extends JMenuItem {
 		addActionListener();
 	}
 	public void expandAll(PiccoloCustomNode pnode, PSwingCanvas canvas) {
-		System.out.println(allPNodes.toString());
 		pnode.expandAll();
 		pnode.getHigherParent().setLayout();
 		ANH.updateAllPosition();

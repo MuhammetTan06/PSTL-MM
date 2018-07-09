@@ -28,6 +28,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
+import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
 
 import com.puck.arrows.ArrowNodesHolder;
@@ -66,7 +67,7 @@ public class NewDisplayDG extends JFrame {
 	private ExecuteRefactoringPlan refactoringPlanExecutor;
 	private PSwingCanvas canvas;
 	private Collection<Edge> forbiddenEdges = new ArrayList<Edge>();
-	private List<PText> forbiddenDependencyCounters = new ArrayList<PText>();
+	private Map<String, PText> forbiddenDependencyCounters = new HashMap<String, PText>();
 	
 	
 	/**
@@ -152,7 +153,6 @@ public class NewDisplayDG extends JFrame {
 	}
 	public void setStateChanger2(StateChanger2 s) {
 		this.state2 = s;
-		System.out.println();
 	}
 	   
 
@@ -247,9 +247,9 @@ public class NewDisplayDG extends JFrame {
 	
 	public void clearAllEdgesDisplay() {
 		new RemovesHierarchyEdgesOf(root, canvas, allPNodes, menu, ANH, listNodes).drawOutgoingdges(root, canvas);
+		this.ANH.getAllArrows().clear();
 		for(PiccoloCustomNode p : this.allPNodes.values()) {
 			NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
-			
 			newContent.getText().setTextPaint(Color.BLACK);
 			newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.PLAIN, 12));
 			
@@ -262,17 +262,18 @@ public class NewDisplayDG extends JFrame {
 		this.forbiddenEdges.clear();
 		drawForbiddenDependencyCounters();
 		root.setLayout();
+		
 	}
 	
 	public void refreshDisplay() {
-		
+		clearAllEdgesDisplay();
+		readForbiddenEdges();
 		
 		new CreateEgdesHierarchyBy(root, canvas, this.allPNodes, menu,ANH,listNodes).drawOutgoingdges(root, canvas);
 		new CreateEgdesHierarchyOf(root, canvas, this.allPNodes, menu,ANH,listNodes).drawOutgoingdges(root, canvas);
 		
-		readForbiddenEdges();
 		
-		this.root.updateContentBoundingBoxes(false, canvas);
+		
 		drawForbiddenDependencyCounters();
 		//clearAllEdgesDisplay();
 		
@@ -285,18 +286,27 @@ public class NewDisplayDG extends JFrame {
 		
 		for(Parrow p:visibleArrows) {
 			String violationValue = "0";
-			for(Edge e : this.forbiddenEdges) {
-				if(e.getFrom().equals(((PiccoloCustomNode)p.getFrom()).getidNode()) && e.getTo().equals(((PiccoloCustomNode)p.getTo()).getidNode())) {
-					violationValue = "1";
-				}
-			}
-			if(p instanceof ParrowUses) 
-				this.ANH.addArrow(new ParrowUses(p.getFrom(), p.getTo(), 10, p.getFrom(), p.getTo(), violationValue));
-			else if(p instanceof ParrowExtends) {
-				this.ANH.addArrow(new ParrowExtends(p.getFrom(), p.getTo(), p.getFrom(), p.getTo(), violationValue));
 				
-			}
 			
+				
+				for(Edge e : this.forbiddenEdges) {
+					if(e.getFrom().equals(((PiccoloCustomNode)p.getFrom()).getidNode()) && e.getTo().equals(((PiccoloCustomNode)p.getTo()).getidNode())) {
+						violationValue = "1";
+					}
+				}
+				if(p instanceof ParrowUses) 
+					this.ANH.addArrow(new ParrowUses(p.getFrom(), p.getTo(), 10, p.getFrom(), p.getTo(), violationValue));
+				else if(p instanceof ParrowExtends) {
+					this.ANH.addArrow(new ParrowExtends(p.getFrom(), p.getTo(), p.getFrom(), p.getTo(), violationValue));
+					this.ANH.showArrow(p);
+				}
+				
+			
+			
+			
+			this.ANH.updateAllPosition();
+			root.setLayout();
+			this.root.updateContentBoundingBoxes(false, canvas);
 		}
 		
 		for(PiccoloCustomNode p : this.allPNodes.values()) {
@@ -320,59 +330,33 @@ public class NewDisplayDG extends JFrame {
 				}
 			}
 			p.setContent(newContent);
-
-//				System.out.println("c");
-//				NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
-//				
-//				newContent.getText().setTextPaint(Color.BLACK);
-//				newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.ROMAN_BASELINE, 12));
-//				
-//				newContent.setOffset(p.getContent().getOffset().getX(),
-//						p.getContent().getOffset().getY());
-//				newContent.addInputEventListener(new PCustomInputEventHandler(p, root, canvas, allPNodes, menu, ANH, listNodes));
-//				p.setContent(newContent);
-				
-			
+			root.setLayout();
 		}
-		
-		//traitement pour contains 
-//		for(Edge e : forbiddenEdges) {
-//			if(e.getType().equals("contains")) {
-//				for(PiccoloCustomNode p : this.allPNodes.values()) {
-//					if(p.getidNode().equals(e.getFrom()) || p.getidNode().equals(e.getTo())) {
-//						System.out.println("c");
-//						NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
-//						
-//						newContent.getText().setTextPaint(Color.RED);
-//						newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.ROMAN_BASELINE, 12));
-//						
-//						newContent.setOffset(p.getContent().getOffset().getX(),
-//								p.getContent().getOffset().getY());
-//						newContent.addInputEventListener(new PCustomInputEventHandler(p, root, canvas, allPNodes, menu, ANH, listNodes));
-//						p.setContent(newContent);
-//						
-//					}
-//				}
-//				
-//			}
-//		}
 
+		//this.ANH.updateAllPosition();
 		
-			
-		this.ANH.updateAllPosition();
-		root.setLayout();
+		this.root.updateContentBoundingBoxes(false, canvas);
 		
 	}
 	
+	public boolean isParrowDrawable(Parrow p) {
+		if(p.getVirtualFrom().equals(p.getVirtualto())) 
+			return false;
+		return true;
+			
+		
+	}
 	public void drawForbiddenDependencyCounters() {
-		for(PText p : this.forbiddenDependencyCounters) {
-			this.canvas.getLayer().removeChild((p));
+		for(PText p : this.forbiddenDependencyCounters.values()) {
+//			this.root.setLayout();
+//			this.canvas.getLayer().removeChild((p));
 		}
 		this.forbiddenDependencyCounters.clear();
 		countForbiddenDep(this.root);
-		for(PText p : this.forbiddenDependencyCounters) {
+		for(PText p : this.forbiddenDependencyCounters.values()) {
 			p.setTextPaint(Color.RED);
-			this.canvas.getLayer().addChild((p));
+//			this.root.setLayout();
+//			this.canvas.getLayer().addChild((p));
 		}
 	}
 	
@@ -381,8 +365,7 @@ public class NewDisplayDG extends JFrame {
 			for(PiccoloCustomNode child : p.getAllChildren()) {
 				countForbiddenDep(child);
 			}
-		}
-		else {
+		} else {
 			int numberOfForbDependencies = 0;
 			Set<Edge> edges = new HashSet<Edge>(this.forbiddenEdges);
 			for(PiccoloCustomNode child : p.getHierarchy()) {
@@ -405,7 +388,7 @@ public class NewDisplayDG extends JFrame {
 				indice.setBounds(p.getContent().getX(), p.getContent().getY()-p.getContent().getHeight()/1.4, 30, 30);
 				
 				
-				this.forbiddenDependencyCounters.add(indice);
+				this.forbiddenDependencyCounters.put(p.getidNode(),indice);
 			}
 			
 		}
@@ -414,34 +397,57 @@ public class NewDisplayDG extends JFrame {
 	
 	public void showOnlyFocusedDependency(Edge ed) {
 		
-		//cleanAllDependencies
 		clearAllEdgesDisplay();
 		
+		readForbiddenEdges();
 		
-		this.ANH.updateAllPosition();
-		
-		//display focused dependency
 		displayForbiddenDep(ed);
-		this.ANH.updateAllPosition();
+		
+		List<PiccoloCustomNode> toAndFrom = new ArrayList<PiccoloCustomNode>();
+		toAndFrom.add(this.allPNodes.get(ed.getFrom()));
+		toAndFrom.add(this.allPNodes.get(ed.getTo()));
+		reorganizeHierarchyWhenFocusingEdge(toAndFrom);
+		
 		this.root.setLayout();
+		this.ANH.updateAllPosition();
 		this.root.updateContentBoundingBoxes(false, this.canvas);
+		
 		drawForbiddenDependencyCounters();	
 	}
 	
 	
 	public void showOnlyAllDependencies () {
-		//cleanAllDependencies
-		clearAllEdgesDisplay();
-		readForbiddenEdges();
 		
-		this.ANH.updateAllPosition();
+		clearAllEdgesDisplay();
+		
+		readForbiddenEdges();
 		
 		for (Edge ed : this.forbiddenEdges)
 			displayForbiddenDep(ed);
+		countForbiddenDep(this.root);
+		while(this.forbiddenDependencyCounters.values().size()!=0) {
+			//System.out.println(this.forbiddenDependencyCounters.size());
+			
+			for(String pnodeID : this.forbiddenDependencyCounters.keySet()) {
+				
+				if(pnodeID.equals(this.root.getidNode()))
+					root.toggleChildren();
+				else
+					this.allPNodes.get(pnodeID).toggleChildren();;
+				this.root.setLayout();
+				this.root.updateContentBoundingBoxes(false, canvas);
+				for (Parrow arrow : this.ANH.getVisibleArrows()) {
+					this.ANH.updatePosition(arrow);
+				}
+			}
+			this.forbiddenDependencyCounters.clear();
+			countForbiddenDep(this.root);
+		}
 		
-		this.ANH.updateAllPosition();
 		this.root.setLayout();
+		this.ANH.updateAllPosition();
 		this.root.updateContentBoundingBoxes(false, this.canvas);
+		
 		drawForbiddenDependencyCounters();	
 	}
 
@@ -462,8 +468,7 @@ public class NewDisplayDG extends JFrame {
 				newContent.addInputEventListener(new PCustomInputEventHandler(this, p));
 				p.setContent(newContent);
 			}
-		}
-		else {
+		} else {
 			if(ed.getType().equals("uses")) {
 				this.ANH.addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1"));
 			}
@@ -471,11 +476,6 @@ public class NewDisplayDG extends JFrame {
 				this.ANH.addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
 			}
 		}
-		this.ANH.updateAllPosition();
-		
-		
-		reorganizeHierarchyWhenFocusingEdge(toAndFrom);
-		
 	}
 
 	private void reorganizeHierarchyWhenFocusingEdge(List<PiccoloCustomNode> toAndFrom) {
@@ -498,18 +498,12 @@ public class NewDisplayDG extends JFrame {
 				}
 			}
 			p = p.getParentNode();
-		}while(!(par.getidNode().equals(p.getHigherParent().getidNode())));
+		} while(!(par.getidNode().equals(p.getHigherParent().getidNode())));
+		
 	}
 
 	
-	
-	
-	
-	
-	
-	
-
-	public HashMap<String, PiccoloCustomNode>  copy() {
+	public HashMap<String, PiccoloCustomNode> copy() {
 		HashMap<String, PiccoloCustomNode> allPNodes_atPre = new HashMap<>();
 		for(Map.Entry<String, PiccoloCustomNode> node : allPNodes.entrySet()) {
 			PiccoloCustomNode copy = PiccoloCustomNode.newInstance(node.getValue());
@@ -524,7 +518,6 @@ public class NewDisplayDG extends JFrame {
 		return allPNodes_atPre;
 	}
 		
-	
 	
 	private void addEvent(PiccoloCustomNode node, PiccoloCustomNode tree,PSwingCanvas canvas,Menu menu,Map<String, Node> listNodes) {
 		node.getContent().getText().addInputEventListener(new PCustomInputEventHandler(this, node));
@@ -546,9 +539,6 @@ public class NewDisplayDG extends JFrame {
 			}
 		}
 	}
-	
-	
-
 	
 	// Listener for Pnode click 
 	class MousePopupListener extends MouseAdapter {

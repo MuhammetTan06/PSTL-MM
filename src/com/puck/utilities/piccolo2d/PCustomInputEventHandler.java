@@ -99,26 +99,42 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 				
 				pnode.toggleChildren();
 				
+				
+				this.frame.getRoot().setLayout();
+				
+				this.frame.getANH().updateAllPosition();
+				
 				this.frame.getRoot().setLayout();
 				
 				
+				ArrayList<PiccoloCustomNode> allNodes = new ArrayList<PiccoloCustomNode>();
+				allNodes.add(this.frame.getRoot());
+				allNodes.addAll(this.frame.getRoot().getHierarchy());
+				for(PiccoloCustomNode c : allNodes)
+					this.frame.getANH().hide_show_arrows(c);
+				this.frame.getANH().updateAllPosition();
+				
+				
+				
+				this.frame.getRoot().setLayout();
+				
+				this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
+//				System.out.println();
+//				System.out.println();
+//				System.out.println(" all "+this.frame.getANH().getAllArrows().size());
+//				System.out.println();
+//				System.out.println(" visible "+this.frame.getANH().getVisibleArrows().size());
+//				System.out.println();
+//				System.out.println(" hidden "+this.frame.getANH().getVisibleArrows().size());
 				//
 				if(this.frame.getForbiddenEdges().size()!=0)
 					this.frame.drawForbiddenDependencyCounters();
 				
-				this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
-				this.frame.getRoot().setLayout();
-				
-				System.out.println("\n");
-				
-				
+			
 				//
 				
 				//System.out.println(pnode.isHidden());
 				
-				for (Parrow arrow : this.frame.getANH().getVisibleArrows()) {
-					this.frame.getANH().updatePosition(arrow);
-				}
 			}
 			if (aEvent.isRightMouseButton()) {
 					generateMenu(this.frame.getMenu(),aEvent);		

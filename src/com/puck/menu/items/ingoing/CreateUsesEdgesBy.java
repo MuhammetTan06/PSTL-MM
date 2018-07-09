@@ -42,15 +42,12 @@ public class CreateUsesEdgesBy extends JMenuItem {
 	}
 
 	public void DrawEdges(PiccoloCustomNode target, PSwingCanvas canvas) {
+		
 		Node node = listNodes.get(target.getidNode());
 
 		HashMap<String, Edge> relation = getRelationInGoing();
 		for (Entry<String, Edge> edgeEntry : relation.entrySet()) {
 			Edge e = edgeEntry.getValue();
-			
-			System.out.print("id: " + e.getId());
-			System.out.println(" " + e.getViolation());
-			System.out.println("\n");
 			
 			PNode to = target;
 			PNode from = (allPNodes.get(e.getFrom()));

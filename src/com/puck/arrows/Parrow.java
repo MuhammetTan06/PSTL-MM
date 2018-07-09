@@ -4,10 +4,11 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 
 import org.piccolo2d.PNode;
+import org.piccolo2d.nodes.PPath;
 
 public abstract class Parrow extends PNode{
     public Parrow(Point2D from, Point2D to,Point2D virtuaFrom,Point2D virtualTo){
-    	
+    	line = PPath.createLine(0.0, 0.0, 0.0, 0.0);
     }
     protected PNode virtualFrom;
     protected PNode virtualto;
@@ -15,6 +16,11 @@ public abstract class Parrow extends PNode{
     protected PNode to;
     protected boolean isAllowed;
     protected String violation;
+    protected PPath line;;
+    
+    public void changeColor(Color c) {
+    	this.line.setStrokePaint(c);
+    }
 
     public String getViolation() {
 		return violation;
@@ -86,6 +92,11 @@ public abstract class Parrow extends PNode{
 
 	public void setAllowed(boolean isAllowed) {
 		this.isAllowed = isAllowed;
+	}
+
+	public void setLine(PPath line2) {
+		this.line = line2;
+		
 	}
 	
     

@@ -25,6 +25,7 @@ public class PiccoloCustomNode extends PNode {
 	private static final long serialVersionUID = 1L;
 	private NodeContent content;
 	private PPath rect;
+	private Point2D position;
 	private Collection<PiccoloCustomNode> hiddenchildren;
 	public Collection<PiccoloCustomNode> getHiddenchildren() {
 		return hiddenchildren;
@@ -44,6 +45,11 @@ public class PiccoloCustomNode extends PNode {
 
 	public PPath getRect() {
 		return rect;
+	}
+	
+	
+	public Point2D getPosition() {
+		return position;
 	}
 
 	public NodeContent getContent() {
@@ -373,7 +379,9 @@ public class PiccoloCustomNode extends PNode {
 			}
 
 			removeChild(rect);
-			System.out.println(this + " " + x + " " + y);
+			this.position = new Point2D.Float();
+			this.position.setLocation(x, y);
+			
 			rect = PPath.createRectangle(x, y, maxWidth, h+ maxHeight + margin);
 			rect = bevelIn(rect, 0);
 
