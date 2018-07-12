@@ -3,6 +3,7 @@ package com.puck.arrows;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.geom.Point2D;
 
 import org.piccolo2d.PNode;
@@ -15,27 +16,94 @@ import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 public class ParrowExtends extends Parrow {
     final static float dash1[] = {10.0f};
     private PPath line;
+    private Triangle head = null;
 	private static double OFFSET = 12;
 	final static BasicStroke dashed =
             new BasicStroke(2.0f,
                             BasicStroke.CAP_BUTT,
                             BasicStroke.JOIN_MITER,
                             10.0f, dash1, 0.0f);
-	public ParrowExtends(Point2D from, Point2D to, Point2D virtuaFrom, Point2D virtualTo, String edgeViolation) {
+	public ParrowExtends(Point2D from, Point2D to, Point2D virtuaFrom, Point2D virtualTo, String edgeViolation, int arrowType) {
 		super(from, to, virtuaFrom, virtualTo);
 		from = virtuaFrom;
 		to = virtualTo;
-		Triangle head = null;
+		this.violation = edgeViolation;
+		this.arrowType = arrowType;
 		
-		double fromX = from.getX();
-		double fromY = from.getY();
-		double toX = to.getX();
-		double toY = to.getY();
+		line = PPath.createLine(0, 0, 0, 0);
+    	head = new Triangle(Color.BLACK, new BasicStroke(1));
 		
-		double xDiff = Math.abs(from.getX()-to.getX());
-		if(from.distance(to) != 0.0) {
+		Color color = edgeViolation.equals("1") ? Color.RED : Color.BLACK;
+		int thic = edgeViolation.equals("1") ? 3 : 1;
+		draw(from, to, this.arrowType, color, thic);
+
+		
+		addChild(line);
+		addChild(head);
 			
-			double angle = Math.acos((xDiff / from.distance(to)));
+		
+		
+//		PText text= new PText("arrowExtends");
+//		text.setBounds((from.getX()+to.getX())/2, (from.getY()+to.getY())/2, text.getWidth(), text.getHeight());
+//		text.rotateInPlace(line.getGlobalRotation());
+//		addChild(text);
+
+	}
+	
+//	public void draw(Point2D f, Point2D t, int arrowType, Paint color, int thickness) {
+//		setPosition(f, t);
+//		changeStyle(arrowType, color, thickness);
+//		
+//	}
+
+	public ParrowExtends(PNode from, PNode to, PNode virtualForm, PNode virtualTo, String edgeViolation, int arrowType) {
+	    this(((PiccoloCustomNode)from).getContent().getText().getGlobalBounds().getCenter2D(),
+        		((PiccoloCustomNode)to).getContent().getText().getGlobalBounds().getCenter2D(),
+        		((PiccoloCustomNode)virtualForm).getContent().getText().getGlobalBounds().getCenter2D(),
+        		((PiccoloCustomNode)virtualTo).getContent().getText().getGlobalBounds().getCenter2D(),
+        		edgeViolation,
+        		arrowType
+        		);
+		
+		this.from = from;
+		this.to = to;
+		this.virtualFrom = virtualForm;
+		this.virtualto = virtualTo;
+	}
+
+	@Override
+	public Parrow redraw() {
+		removeAllChildren();
+		return new ParrowExtends(from, to, from, to, violation, arrowType);
+	}
+
+	@Override
+	public Parrow redraw(PNode virtuaFrom) {
+		removeAllChildren();
+		return new ParrowExtends(from, to, virtuaFrom, to, violation, arrowType);
+	}
+
+	@Override
+	public Parrow redrawTo(PNode virtualTo) {
+		removeAllChildren();
+		return new ParrowExtends(from, to, virtualFrom, virtualTo, violation, arrowType);
+	}
+
+
+	@Override
+	public void draw(Point2D f, Point2D t, int arrowType, Paint color, int thickness) {
+		removeChild(line); 
+		removeChild(head);
+		
+		double fromX = f.getX();
+		double fromY = f.getY();
+		double toX = t.getX();
+		double toY = t.getY();
+		
+		double xDiff = Math.abs(f.getX()-t.getX());
+		if(f.distance(t) != 0.0) {
+			
+			double angle = Math.acos((xDiff / f.distance(t)));
 		
 			double xOffset = Math.cos(angle) * OFFSET ;
 			double yOffset = Math.sin(angle) * OFFSET;
@@ -56,64 +124,27 @@ public class ParrowExtends extends Parrow {
 				toY+=yOffset;
 			}
 		}
-
+		
 		line = PPath.createLine(fromX, fromY, toX, toY);
 		
-		this.violation = edgeViolation;
-		if(this.violation.equals("1")) {
-			line.setStroke(new BasicStroke(3));
-			line.setStrokePaint(Color.RED);
-			head = new Triangle(Color.RED, 3);
-		}else if(this.violation.equals("0")) {
-			line.setStroke(new BasicStroke(1));
-			line.setStrokePaint(Color.BLACK);
-			head = new Triangle(Color.WHITE, 1);
+		double theta = Math.atan2(t.getY() - f.getY(), t.getX() - f.getX()) + Math.toRadians(90);
+	
+		
+		if(this.arrowType == VIRTUAL_TYPE) {
+			line.setStroke(VIRTUAL_SHAPE);
+			head = new Triangle(color, VIRTUAL_SHAPE);
 		}
-        
-		line.setStroke(dashed);
-		double theta = Math.atan2(to.getY() - from.getY(), to.getX() - from.getX()) + Math.toRadians(90);
+		else {
+			line.setStroke(dashed);
+			head = new Triangle(color, new BasicStroke(thickness-1));
+		}
+
+		line.setStrokePaint(color);
 		head.translate(toX, toY);
 		head.rotate(theta);
 
-		addChild(line);
-		addChild(head);
-		
-//		PText text= new PText("arrowExtends");
-//		text.setBounds((from.getX()+to.getX())/2, (from.getY()+to.getY())/2, text.getWidth(), text.getHeight());
-//		text.rotateInPlace(line.getGlobalRotation());
-//		addChild(text);
-
-	}
-
-	public ParrowExtends(PNode from, PNode to, PNode virtualForm, PNode virtualTo, String edgeViolation) {
-	    this(((PiccoloCustomNode)from).getContent().getText().getGlobalBounds().getCenter2D(),
-        		((PiccoloCustomNode)to).getContent().getText().getGlobalBounds().getCenter2D(),
-        		((PiccoloCustomNode)virtualForm).getContent().getText().getGlobalBounds().getCenter2D(),
-        		((PiccoloCustomNode)virtualTo).getContent().getText().getGlobalBounds().getCenter2D(),
-        		edgeViolation);
-		
-		this.from = from;
-		this.to = to;
-		this.virtualFrom = virtualForm;
-		this.virtualto = virtualTo;
-	}
-
-	@Override
-	public Parrow redraw() {
-		removeAllChildren();
-		return new ParrowExtends(from, to, from, to, violation);
-	}
-
-	@Override
-	public Parrow redraw(PNode virtuaFrom) {
-		removeAllChildren();
-		return new ParrowExtends(from, to, virtuaFrom, to, violation);
-	}
-
-	@Override
-	public Parrow redrawTo(PNode virtualTo) {
-		removeAllChildren();
-		return new ParrowExtends(from, to, virtualFrom, virtualTo, violation);
+    	addChild(line); 
+    	addChild(head);
 	}
 
 }

@@ -1,12 +1,23 @@
 package com.puck.arrows;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.geom.Point2D;
 
 import org.piccolo2d.PNode;
 import org.piccolo2d.nodes.PPath;
 
 public abstract class Parrow extends PNode{
+	final static float dash1[] = {2.0f};
+	final static BasicStroke VIRTUAL_SHAPE =
+            new BasicStroke(2.0f,
+                            BasicStroke.CAP_BUTT,
+                            BasicStroke.JOIN_MITER,
+                            10.0f, dash1, 0.0f);
+	public static final int VIRTUAL_TYPE = 0;
+	public static final int REAL_TYPE = 1;
+	
     public Parrow(Point2D from, Point2D to,Point2D virtuaFrom,Point2D virtualTo){
     	line = PPath.createLine(0.0, 0.0, 0.0, 0.0);
     }
@@ -16,10 +27,13 @@ public abstract class Parrow extends PNode{
     protected PNode to;
     protected boolean isAllowed;
     protected String violation;
+    protected int arrowType = REAL_TYPE;;
     protected PPath line;;
     
-    public void changeColor(Color c) {
-    	this.line.setStrokePaint(c);
+    
+  
+    public Paint getColor() {
+    	return line.getStrokePaint();
     }
 
     public String getViolation() {
@@ -55,7 +69,9 @@ public abstract class Parrow extends PNode{
         this.violation = "0";
         
     }
-
+    public abstract void draw(Point2D from, Point2D to, int arrowType, Paint color, int thickness);
+    
+    
     public abstract Parrow redraw();
     public abstract Parrow redraw(PNode virtuaFrom);
     public abstract Parrow redrawTo(PNode virtuaFrom);
@@ -97,6 +113,13 @@ public abstract class Parrow extends PNode{
 	public void setLine(PPath line2) {
 		this.line = line2;
 		
+	}
+
+	public void setArrowType(int type) {
+		this.arrowType = type;	
+	}
+	public int getArrowType() {
+		return this.arrowType;
 	}
 	
     

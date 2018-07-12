@@ -69,11 +69,7 @@ public class NewDisplayDG extends JFrame {
 	private Collection<Edge> forbiddenEdges = new ArrayList<Edge>();
 	private Map<String, PText> forbiddenDependencyCounters = new HashMap<String, PText>();
 	
-	
-	/**
-	 * 
-	 */
-	
+
 	
 	
 	private static final long serialVersionUID = 1L;
@@ -266,7 +262,7 @@ public class NewDisplayDG extends JFrame {
 	}
 	
 	public void refreshDisplay() {
-		clearAllEdgesDisplay();
+		
 		readForbiddenEdges();
 		
 		new CreateEgdesHierarchyBy(root, canvas, this.allPNodes, menu,ANH,listNodes).drawOutgoingdges(root, canvas);
@@ -277,37 +273,54 @@ public class NewDisplayDG extends JFrame {
 		drawForbiddenDependencyCounters();
 		//clearAllEdgesDisplay();
 		
-		Collection<Parrow> visibleArrows = this.ANH.getVisibleArrows();
+		Collection<Parrow> visibleArrows = this.ANH.getAllArrows();
 		
 		
 		//traitement pour use et extend
 		
-		
+		this.ANH.updateAllPosition();
 		
 		for(Parrow p:visibleArrows) {
+			if(((PiccoloCustomNode)p.getVirtualFrom()).getidNode().equals(((PiccoloCustomNode)p.getVirtualto()).getidNode())) {
+				
+				continue;
+			}
 			String violationValue = "0";
+			int arrowType;
+			if(!((PiccoloCustomNode)p.getFrom()).getidNode().equals(((PiccoloCustomNode)p.getVirtualFrom()).getidNode()) || 
+					!((PiccoloCustomNode)p.getTo()).getidNode().equals(((PiccoloCustomNode)p.getVirtualto()).getidNode()))
+				arrowType = Parrow.VIRTUAL_TYPE;
+			else 
+				arrowType = Parrow.REAL_TYPE;
 				
-			
-				
-				for(Edge e : this.forbiddenEdges) {
-					if(e.getFrom().equals(((PiccoloCustomNode)p.getFrom()).getidNode()) && e.getTo().equals(((PiccoloCustomNode)p.getTo()).getidNode())) {
-						violationValue = "1";
-					}
+			for(Edge e : this.forbiddenEdges) {
+				if(e.getFrom().equals(((PiccoloCustomNode)p.getFrom()).getidNode()) && e.getTo().equals(((PiccoloCustomNode)p.getTo()).getidNode())) {
+					violationValue = "1";
 				}
-				if(p instanceof ParrowUses) 
-					this.ANH.addArrow(new ParrowUses(p.getFrom(), p.getTo(), 10, p.getFrom(), p.getTo(), violationValue));
-				else if(p instanceof ParrowExtends) {
-					this.ANH.addArrow(new ParrowExtends(p.getFrom(), p.getTo(), p.getFrom(), p.getTo(), violationValue));
-					this.ANH.showArrow(p);
-				}
+			}
+			if(p instanceof ParrowUses) {
+				this.ANH.addArrow(new ParrowUses(p.getFrom(), p.getTo(), 10, p.getFrom(), p.getTo(), violationValue, arrowType));
+			}
+			else if(p instanceof ParrowExtends) {
+				this.ANH.addArrow(new ParrowExtends(p.getFrom(), p.getTo(), p.getFrom(), p.getTo(), violationValue, arrowType));
+//				this.ANH.showArrow(p)
+			}
 				
 			
 			
-			
-			this.ANH.updateAllPosition();
 			root.setLayout();
 			this.root.updateContentBoundingBoxes(false, canvas);
 		}
+		
+		System.out.println(this.ANH.getAllArrows().size());
+		ArrayList<PiccoloCustomNode> allNodes = new ArrayList<PiccoloCustomNode>();
+		allNodes.add(this.root);
+		allNodes.addAll(this.root.getHierarchy());
+		for(PiccoloCustomNode c : allNodes)
+			
+				this.ANH.hide_show_arrows(c);
+		this.ANH.updateAllPosition();
+		
 		
 		for(PiccoloCustomNode p : this.allPNodes.values()) {
 			NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
@@ -470,10 +483,10 @@ public class NewDisplayDG extends JFrame {
 			}
 		} else {
 			if(ed.getType().equals("uses")) {
-				this.ANH.addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1"));
+				this.ANH.addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1", Parrow.REAL_TYPE));
 			}
 			else {
-				this.ANH.addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1"));
+				this.ANH.addArrow(new ParrowExtends(fromNode, toNode, fromNode, toNode, "1", Parrow.REAL_TYPE));
 			}
 		}
 	}

@@ -11,21 +11,16 @@ import org.piccolo2d.PNode;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 
 public class ArrowNodesHolder extends PNode {
-	public void setHiddenArrows(Collection<Parrow> hiddenArrows) {
-		this.hiddenArrows = hiddenArrows;
-	}
-	public Collection<Parrow> getHiddenArrows() {
-		return this.hiddenArrows;
-	}
+	
+	
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Collection<Parrow> hiddenArrows;
+	
 
 	public ArrowNodesHolder() {
-		hiddenArrows = new HashSet<>();
 	}
 
 	public void addArrow(Parrow arrow) {
@@ -51,32 +46,45 @@ public class ArrowNodesHolder extends PNode {
 //				break;
 //			}
 //		}
-		hiddenArrows.add(arrow);
-		removeArrow(arrow);
+		arrow.setVisible(false);
 	}
 
 	public void showArrow(Parrow arrow) {
-		addArrow(arrow);
-		hiddenArrows.remove(arrow);
+		arrow.setVisible(true);
 	}
 
 	public boolean isHidden(Parrow arrow) {
-		return hiddenArrows.contains(arrow);
+		return arrow.getVisible();
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	public Collection<Parrow> getVisibleArrows() {
 		Collection<Parrow> set = new HashSet<>();
 		for (Iterator<Parrow> iterator = getChildrenIterator(); iterator.hasNext();) {
 			PNode n = iterator.next();
 			
-			if (n instanceof Parrow)
-				set.add((Parrow) n);
+			if (n instanceof Parrow ) {
+				if(((Parrow) n).getVisible()) {
+					set.add((Parrow) n);
+				}
+			}
 		}
 		return set;
 	}
-
 	
+	public Collection<Parrow> getHiddenArrows() {
+		Collection<Parrow> set = new HashSet<>();
+		for (Iterator<Parrow> iterator = getChildrenIterator(); iterator.hasNext();) {
+			PNode n = iterator.next();
+			
+			if (n instanceof Parrow ) {
+				if(!((Parrow) n).getVisible())
+					set.add((Parrow) n);
+			}
+		}
+		return set;
+	
+	}
 
 	public Collection<Parrow> getAllArrows() {
 		Collection<Parrow> set = new HashSet<>();
@@ -85,8 +93,6 @@ public class ArrowNodesHolder extends PNode {
 			if (n instanceof Parrow)
 				set.add((Parrow) n);
 		}
-		for (Iterator<Parrow> iterator = hiddenArrows.iterator(); iterator.hasNext();)
-			set.add(iterator.next());
 		return set;
 	}
 
@@ -102,48 +108,51 @@ public class ArrowNodesHolder extends PNode {
 		for (PiccoloCustomNode pnode : fromAscendency) {
 			if (!pnode.isHidden()) {
 				if (pnode.equals((PiccoloCustomNode) from)) {
-					Parrow ar2 = arrow.redraw();
-					removeArrow(arrow);
-					addArrow(ar2);
-					virtualFrom = ar2.getVirtualFrom();
-					arrow = ar2;
+					arrow.setVirtualFrom(from);
+					
 					break;
 				} else {
-					Parrow ar2 = arrow.redraw(pnode);
-					removeArrow(arrow);
-					addArrow(ar2);
-					virtualFrom = ar2.getVirtualFrom();
-					arrow = ar2;
+					
+					arrow.setVirtualFrom(pnode);
+					
 					break;
+				
 				}
 			}
 		}
 		for (PiccoloCustomNode pnode : toAscendency) {
 			if (!pnode.isHidden()) {
-				if (pnode.equals((PiccoloCustomNode) to) && from.equals(virtualFrom)) {
-					Parrow ar2 = arrow.redraw();
-					removeArrow(arrow);
-					addArrow(ar2);
-					arrow = ar2;
-					
+				if (pnode.equals((PiccoloCustomNode) to) && from.equals(arrow.getVirtualFrom())) {
+					arrow.setVirtualto(to);
+					arrow.setArrowType(Parrow.REAL_TYPE);
 					break;
 				} else if (pnode.equals((PiccoloCustomNode) to)) {
-					Parrow ar2 = arrow.redrawTo(to);
-					removeArrow(arrow);
-					addArrow(ar2);
-					virtualTo = ar2.getVirtualto();
-					arrow = ar2;
+					
+					arrow.setVirtualto(to);
+					arrow.setArrowType(Parrow.VIRTUAL_TYPE);
 					break;
 				} else {
-					Parrow ar2 = arrow.redrawTo(pnode);
-					removeArrow(arrow);
-					addArrow(ar2);
-					virtualTo = ar2.getVirtualto();
-					arrow = ar2;
+					
+					arrow.setVirtualto(pnode);
+					arrow.setArrowType(Parrow.VIRTUAL_TYPE);
 					break;
 				}
 			}
+			
 		}
+		
+		int thick = arrow.getViolation().equals("1") ? 3 : 1;
+		Color color = arrow.getViolation().equals("1") ? Color.RED : Color.BLACK;
+		arrow.draw(((PiccoloCustomNode)arrow.getVirtualFrom()).getContent().getText().getGlobalBounds().getCenter2D(),
+				((PiccoloCustomNode)arrow.getVirtualto()).getContent().getText().getGlobalBounds().getCenter2D(),
+				arrow.getArrowType(),
+				color,
+				thick
+			);
+		
+		
+		
+	
 		// Pour afficher les cardinalités
 		// if (virtualFrom != null &&
 		// ((PiccoloCustomNode)virtualFrom).getContent().getType().equals("package")) {
@@ -156,8 +165,9 @@ public class ArrowNodesHolder extends PNode {
 		// }
 		// }
 		// }
-
+		
 	}
+	
 
 
 	
@@ -166,12 +176,12 @@ public class ArrowNodesHolder extends PNode {
 		//hierarchy.add(node);
 		if(node.isCollapsed()) {
 			for (Parrow arrow : getVisibleArrows()) {
-
 				PiccoloCustomNode PCNF = (PiccoloCustomNode) arrow.getVirtualFrom();
 				PiccoloCustomNode PCNT = (PiccoloCustomNode) arrow.getVirtualto();
-
+				
 				if (node.getidNode().equals(PCNF.getidNode()) && node.getidNode().equals(PCNT.getidNode()) ) {
-					hideArrow(arrow);
+			
+					arrow.setVisible(false);
 					// System.out.println("hide
 					// "+getVisibleArrows().size()+"-"+getHiddenArrows().size());
 				}
@@ -179,29 +189,18 @@ public class ArrowNodesHolder extends PNode {
 		}
 		else {
 			for (PiccoloCustomNode PCN : hierarchy) {
-			
-				
-					Iterator<Parrow> it = this.hiddenArrows.iterator();
-				
-				
-					while(it.hasNext()) {
-						Parrow current = it.next();
-						PiccoloCustomNode PCNF = (PiccoloCustomNode) current.getFrom();
-						PiccoloCustomNode PCNT = (PiccoloCustomNode) current.getTo();
-						if ((!PCNT.isHidden() || !PCNF.isHidden()) ) {
-							addArrow(current);
-							it.remove();
-							// System.out.println("show
-							// "+getVisibleArrows().size()+"-"+getHiddenArrows().size());
-							
-						}
-					
-				
+				Collection<Parrow> hiddenArrows = this.getHiddenArrows();
+				for (Parrow p : hiddenArrows) {
+					PiccoloCustomNode PCNF = (PiccoloCustomNode) p.getFrom();
+					PiccoloCustomNode PCNT = (PiccoloCustomNode) p.getTo();
+					if ((!PCNT.isHidden() || !PCNF.isHidden()) ) {
+						p.setVisible(true);
+						// System.out.println("show
+						// "+getVisibleArrows().size()+"-"+getHiddenArrows().size());
+					}
+				}
 			}
-			
 		}
-		
-	}
 	}
 
 	@SuppressWarnings("unckecked")

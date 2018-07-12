@@ -15,6 +15,7 @@ import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
+import com.puck.arrows.Parrow;
 import com.puck.arrows.ParrowExtends;
 import com.puck.menu.Menu;
 import com.puck.nodes.piccolo2d.Edge;
@@ -53,12 +54,12 @@ public class CreateISAEdgesOf extends JMenuItem {
 					PNode to = (allPNodes.get(e.getTo()));
 					if (to.getParent() instanceof PiccoloCustomNode
 							&& !((PiccoloCustomNode) to.getParent()).isHidden()) {
-						ANH.addArrow(new ParrowExtends(from, to, from, to, e.getViolation()));
+						ANH.addArrow(new ParrowExtends(from, to, from, to, e.getViolation(), Parrow.REAL_TYPE));
 						ANH.updateAllPosition();
 					} else {
 						for (PiccoloCustomNode pnode : ((PiccoloCustomNode) to).getAscendency()) {
 							if (!pnode.isHidden()) {
-								ANH.addArrow(new ParrowExtends(from, to, from, pnode, e.getViolation()));
+								ANH.addArrow(new ParrowExtends(from, to, from, pnode, e.getViolation(), Parrow.REAL_TYPE));
 								break;
 							}
 						}

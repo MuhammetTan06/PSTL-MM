@@ -23,6 +23,8 @@ import org.piccolo2d.nodes.PText;
 
 import com.puck.arrows.ArrowNodesHolder;
 import com.puck.arrows.Parrow;
+import com.puck.arrows.ParrowExtends;
+import com.puck.arrows.ParrowUses;
 import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
 import com.puck.menu.items.AddNode;
@@ -74,6 +76,7 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		this.createEdgesBy = new CreateEdgesBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
 		this.createEgdesHierarchyBy = new CreateEgdesHierarchyBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
 		this.createEgdesHierarchyOf = new CreateEgdesHierarchyOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		
 		this.removesHierarchyEdgesOf = new RemovesHierarchyEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
 		this.hideNode = new HideNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
 		this.focusNode = new FocusNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
@@ -100,11 +103,27 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 				pnode.toggleChildren();
 				
 				
-				this.frame.getRoot().setLayout();
-				
 				this.frame.getANH().updateAllPosition();
 				
 				this.frame.getRoot().setLayout();
+				
+//				for(Parrow p:this.frame.getANH().getAllArrows()) {
+//					
+//					int arrowType;
+//					if(!((PiccoloCustomNode)p.getFrom()).getidNode().equals(((PiccoloCustomNode)p.getVirtualFrom()).getidNode()) || 
+//							!((PiccoloCustomNode)p.getTo()).getidNode().equals(((PiccoloCustomNode)p.getVirtualto()).getidNode()))
+//						arrowType = Parrow.VIRTUAL_TYPE;
+//					else 
+//						arrowType = Parrow.REAL_TYPE;
+//						
+//					
+//					
+//					
+//					
+//					this.frame.getRoot().setLayout();
+//					this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
+//				}
+				
 				
 				
 				ArrayList<PiccoloCustomNode> allNodes = new ArrayList<PiccoloCustomNode>();
@@ -117,23 +136,10 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 				
 				
 				this.frame.getRoot().setLayout();
-				
 				this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
-//				System.out.println();
-//				System.out.println();
-//				System.out.println(" all "+this.frame.getANH().getAllArrows().size());
-//				System.out.println();
-//				System.out.println(" visible "+this.frame.getANH().getVisibleArrows().size());
-//				System.out.println();
-//				System.out.println(" hidden "+this.frame.getANH().getVisibleArrows().size());
-				//
+
 				if(this.frame.getForbiddenEdges().size()!=0)
 					this.frame.drawForbiddenDependencyCounters();
-				
-			
-				//
-				
-				//System.out.println(pnode.isHidden());
 				
 			}
 			if (aEvent.isRightMouseButton()) {

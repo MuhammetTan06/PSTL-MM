@@ -3,6 +3,7 @@ package com.puck.arrows;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Paint;
 
 import org.piccolo2d.PNode;
 import org.piccolo2d.nodes.PPath;
@@ -13,10 +14,10 @@ public class Triangle extends PNode{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public Triangle(Color color, int thickness){
+	public Triangle(Paint color, BasicStroke stroke){
         PPath t = new PPath.Float();
         t.moveTo(0,0);
-        t.setStroke(new BasicStroke(thickness));
+        t.setStroke(stroke);
         t.lineTo(-5,5);
         t.lineTo(5,5);
         t.lineTo(0,0);
