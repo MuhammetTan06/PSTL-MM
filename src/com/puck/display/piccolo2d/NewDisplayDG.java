@@ -4,8 +4,10 @@ package com.puck.display.piccolo2d;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.color.ICC_ColorSpace;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 import org.piccolo2d.nodes.PPath;
 import org.piccolo2d.nodes.PText;
@@ -67,9 +70,10 @@ public class NewDisplayDG extends JFrame {
 	private ExecuteRefactoringPlan refactoringPlanExecutor;
 	private PSwingCanvas canvas;
 	private Collection<Edge> forbiddenEdges = new ArrayList<Edge>();
+	
+	private List<PText> forbiddenVirtualArrowCounters = new ArrayList<PText>();
 	private Map<String, PText> forbiddenDependencyCounters = new HashMap<String, PText>();
 	
-
 	
 	
 	private static final long serialVersionUID = 1L;
@@ -104,6 +108,7 @@ public class NewDisplayDG extends JFrame {
 		return refactoringPlanExecutor;
 	}
 	public PSwingCanvas getCanvas() {
+		
 		return canvas;
 	}
 	public static long getSerialversionuid() {
@@ -226,7 +231,6 @@ public class NewDisplayDG extends JFrame {
 					
 					if(forbiddenIDs.contains(e.getId())) {
 						forbiddenEdges.add(e);
-						
 					}
 						
 							
@@ -265,61 +269,38 @@ public class NewDisplayDG extends JFrame {
 		
 		readForbiddenEdges();
 		
-		new CreateEgdesHierarchyBy(root, canvas, this.allPNodes, menu,ANH,listNodes).drawOutgoingdges(root, canvas);
-		new CreateEgdesHierarchyOf(root, canvas, this.allPNodes, menu,ANH,listNodes).drawOutgoingdges(root, canvas);
+		new CreateEgdesHierarchyBy(root, this).drawOutgoingdges(root, canvas);
+		new CreateEgdesHierarchyOf(root, this).drawOutgoingdges(root, canvas);
 		
 		
 		
-		drawForbiddenDependencyCounters();
+		//drawForbiddenDependencyCounters();
 		//clearAllEdgesDisplay();
 		
-		Collection<Parrow> visibleArrows = this.ANH.getAllArrows();
 		
 		
 		//traitement pour use et extend
 		
 		this.ANH.updateAllPosition();
 		
-		for(Parrow p:visibleArrows) {
-			if(((PiccoloCustomNode)p.getVirtualFrom()).getidNode().equals(((PiccoloCustomNode)p.getVirtualto()).getidNode())) {
-				
-				continue;
-			}
-			String violationValue = "0";
-			int arrowType;
-			if(!((PiccoloCustomNode)p.getFrom()).getidNode().equals(((PiccoloCustomNode)p.getVirtualFrom()).getidNode()) || 
-					!((PiccoloCustomNode)p.getTo()).getidNode().equals(((PiccoloCustomNode)p.getVirtualto()).getidNode()))
-				arrowType = Parrow.VIRTUAL_TYPE;
-			else 
-				arrowType = Parrow.REAL_TYPE;
-				
-			for(Edge e : this.forbiddenEdges) {
-				if(e.getFrom().equals(((PiccoloCustomNode)p.getFrom()).getidNode()) && e.getTo().equals(((PiccoloCustomNode)p.getTo()).getidNode())) {
-					violationValue = "1";
-				}
-			}
-			if(p instanceof ParrowUses) {
-				this.ANH.addArrow(new ParrowUses(p.getFrom(), p.getTo(), 10, p.getFrom(), p.getTo(), violationValue, arrowType));
-			}
-			else if(p instanceof ParrowExtends) {
-				this.ANH.addArrow(new ParrowExtends(p.getFrom(), p.getTo(), p.getFrom(), p.getTo(), violationValue, arrowType));
-//				this.ANH.showArrow(p)
-			}
-				
-			
-			
-			root.setLayout();
-			this.root.updateContentBoundingBoxes(false, canvas);
-		}
 		
-		System.out.println(this.ANH.getAllArrows().size());
+		
+		this.root.setLayout();
 		ArrayList<PiccoloCustomNode> allNodes = new ArrayList<PiccoloCustomNode>();
 		allNodes.add(this.root);
 		allNodes.addAll(this.root.getHierarchy());
 		for(PiccoloCustomNode c : allNodes)
-			
-				this.ANH.hide_show_arrows(c);
+			this.ANH.hide_show_arrows(c);
 		this.ANH.updateAllPosition();
+		
+		//
+		
+		
+		this.root.setLayout();
+		this.root.updateContentBoundingBoxes(false, this.canvas);
+				
+			
+		
 		
 		
 		for(PiccoloCustomNode p : this.allPNodes.values()) {
@@ -333,7 +314,7 @@ public class NewDisplayDG extends JFrame {
 			newContent.addInputEventListener(new PCustomInputEventHandler(this, p));
 			for(Edge e : forbiddenEdges) {
 				if(e.getType().equals("contains")) {
-					if(p.getidNode().equals(e.getFrom()) || p.getidNode().equals(e.getTo())) {
+					if(p.getidNode().equals(e.getTo())) {
 						
 						newContent.getText().setTextPaint(Color.RED);
 						newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.BOLD, 12));
@@ -360,16 +341,17 @@ public class NewDisplayDG extends JFrame {
 		
 	}
 	public void drawForbiddenDependencyCounters() {
-		for(PText p : this.forbiddenDependencyCounters.values()) {
-//			this.root.setLayout();
-//			this.canvas.getLayer().removeChild((p));
+		for(PText p : this.forbiddenVirtualArrowCounters) {
+			
+			this.root.setLayout();
+			this.canvas.getLayer().removeChild((p));
 		}
-		this.forbiddenDependencyCounters.clear();
-		countForbiddenDep(this.root);
-		for(PText p : this.forbiddenDependencyCounters.values()) {
-			p.setTextPaint(Color.RED);
-//			this.root.setLayout();
-//			this.canvas.getLayer().addChild((p));
+		
+		countForbiddenVirtualArrows();
+		for(PText p : this.forbiddenVirtualArrowCounters) {
+			
+			this.root.setLayout();
+			this.canvas.getLayer().addChild((p));
 		}
 	}
 	
@@ -401,10 +383,108 @@ public class NewDisplayDG extends JFrame {
 				indice.setBounds(p.getContent().getX(), p.getContent().getY()-p.getContent().getHeight()/1.4, 30, 30);
 				
 				
-				this.forbiddenDependencyCounters.put(p.getidNode(),indice);
+				
 			}
 			
 		}
+	}
+	
+	private void countForbiddenVirtualArrows() {
+//		Map<PiccoloCustomNode[], ArrayList<Parrow>> tab = new HashMap<PiccoloCustomNode[], ArrayList<Parrow> >();
+//		forbiddenVirtualArrowCounters.clear();
+//		
+//		for(Parrow p : this.ANH.getVisibleArrows()) {
+//			if(p.getArrowType() == Parrow.VIRTUAL_TYPE) {
+//				
+//				PiccoloCustomNode from = (PiccoloCustomNode)p.getVirtualFrom();
+//				PiccoloCustomNode to = (PiccoloCustomNode)p.getVirtualto();
+//				PiccoloCustomNode[] fromAndTo = new PiccoloCustomNode[2];
+//				fromAndTo[0] = from;
+//				fromAndTo[1] = to;
+//				ArrayList<Parrow> arrows = tab.get(fromAndTo);
+//				if(arrows != null) {
+//					arrows.add(p);
+//				}
+//				else {
+//					ArrayList<Parrow> newArrowsList = new ArrayList<Parrow>();
+//					newArrowsList.add(p);
+//					tab.put(fromAndTo, newArrowsList);
+//				}
+//				
+//			}
+			
+			
+//		}
+		ArrayList<ArrayList<Parrow>> tab = new ArrayList<ArrayList<Parrow>>();
+		for(Parrow p : this.ANH.getVisibleArrows()) {
+			
+			if(p.getArrowType() == Parrow.VIRTUAL_TYPE) {
+				boolean kk = false;
+				PiccoloCustomNode from = (PiccoloCustomNode)p.getVirtualFrom();
+				PiccoloCustomNode to = (PiccoloCustomNode)p.getVirtualto();
+				
+				if(tab.size()!=0) {
+					for(ArrayList<Parrow> arrows : tab) {
+						if(((PiccoloCustomNode)arrows.get(0).getVirtualFrom()).getidNode().equals(from.getidNode()) && ((PiccoloCustomNode)arrows.get(0).getVirtualto()).getidNode().equals(to.getidNode())) {
+							arrows.add(p);
+							kk = true;
+							break;
+						}
+					}
+					if(!kk) {
+						ArrayList<Parrow> arr = new ArrayList<Parrow>();
+						arr.add(p);
+						tab.add(arr);
+						
+					}
+					
+				}
+				else {
+					ArrayList<Parrow> arr = new ArrayList<Parrow>();
+					arr.add(p);
+					tab.add(arr);
+					
+				}
+				
+				
+			}
+		}
+		
+		
+		for(ArrayList<Parrow> arrows : tab) {
+			PiccoloCustomNode from = (PiccoloCustomNode)arrows.get(0).getVirtualFrom();
+			PiccoloCustomNode to = (PiccoloCustomNode)arrows.get(0).getVirtualto();
+			Point2D coords = new Point2D.Double();
+			coords.setLocation((to.getContent().getText().getGlobalBounds().getCenter2D().getX() + from.getContent().getText().getGlobalBounds().getCenter2D().getX())/2,
+					(from.getContent().getText().getGlobalBounds().getCenter2D().getY() + to.getContent().getText().getGlobalBounds().getCenter2D().getY())/2 - 8);
+			int forbiddenArrowsCount = 0;
+			for(Parrow p : arrows) {
+				if(p.getViolation().equals("1")) {
+					p.draw(((PiccoloCustomNode)p.getVirtualFrom()).getContent().getText().getGlobalBounds().getCenter2D(),
+							((PiccoloCustomNode)p.getVirtualto()).getContent().getText().getGlobalBounds().getCenter2D(),
+							p.getArrowType(),
+							Color.RED,
+							3
+						);
+					forbiddenArrowsCount++;
+				}
+			}
+			
+			if(forbiddenArrowsCount>0) {
+				PText text = new PText(""+forbiddenArrowsCount);
+				text.setBounds(coords.getX(), coords.getY(), 10, 10);
+				text.setTextPaint(Color.RED);
+				forbiddenVirtualArrowCounters.add(text);
+			}
+			
+			
+		}
+		System.out.println();
+		for(ArrayList<Parrow> arrows : tab) {
+			System.out.println(arrows.size());
+		}
+		
+		
 	}
 	
 	
@@ -438,10 +518,10 @@ public class NewDisplayDG extends JFrame {
 		for (Edge ed : this.forbiddenEdges)
 			displayForbiddenDep(ed);
 		countForbiddenDep(this.root);
-		while(this.forbiddenDependencyCounters.values().size()!=0) {
+		while(this.forbiddenVirtualArrowCounters.size()!=0) {
 			//System.out.println(this.forbiddenDependencyCounters.size());
 			
-			for(String pnodeID : this.forbiddenDependencyCounters.keySet()) {
+			for(String pnodeID : this.forbiddenDependencyCounters .keySet()) {
 				
 				if(pnodeID.equals(this.root.getidNode()))
 					root.toggleChildren();
@@ -472,15 +552,15 @@ public class NewDisplayDG extends JFrame {
 		toAndFrom.add(toNode);
 		this.ANH.updateAllPosition();
 		if(ed.getType().equals("contains")) {
-			for(PiccoloCustomNode p : toAndFrom) {
-				NodeContent newContent = new NodeContent(new PText(p.getName()), p.getContent().getType());
-				newContent.getText().setTextPaint(Color.RED);
-				newContent.getText().setFont(new Font(p.getContent().getText().getText(), Font.BOLD, 12));
-				newContent.setOffset(p.getContent().getOffset().getX(),
-						p.getContent().getOffset().getY());
-				newContent.addInputEventListener(new PCustomInputEventHandler(this, p));
-				p.setContent(newContent);
-			}
+			
+			NodeContent newContent = new NodeContent(new PText(toNode.getName()), toNode.getContent().getType());
+			newContent.getText().setTextPaint(Color.RED);
+			newContent.getText().setFont(new Font(toNode.getContent().getText().getText(), Font.BOLD, 12));
+			newContent.setOffset(toNode.getContent().getOffset().getX(),
+					toNode.getContent().getOffset().getY());
+			newContent.addInputEventListener(new PCustomInputEventHandler(this, toNode));
+			toNode.setContent(newContent);
+			
 		} else {
 			if(ed.getType().equals("uses")) {
 				this.ANH.addArrow(new ParrowUses(fromNode, toNode, 10, fromNode, toNode, "1", Parrow.REAL_TYPE));

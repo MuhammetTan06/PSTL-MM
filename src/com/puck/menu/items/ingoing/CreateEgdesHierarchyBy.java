@@ -6,12 +6,14 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
 import com.puck.arrows.Parrow;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
 import com.puck.nodes.piccolo2d.Node;
 import com.puck.nodes.piccolo2d.PiccoloCustomNode;
@@ -19,44 +21,39 @@ import com.puck.utilities.piccolo2d.XmlToStructure;
 
 public class CreateEgdesHierarchyBy extends JMenuItem {
 
-	private HashMap<String, PiccoloCustomNode> allPNodes;
-	private  Map<String, Node> listNodes;
+	
 	private PiccoloCustomNode pnode;
-	private PSwingCanvas canvas;
-	private Menu menu;
-	private ArrowNodesHolder ANH;
+	private NewDisplayDG frame;
+
 	private CreateEdgesBy createEdgesBy;
 
-	public CreateEgdesHierarchyBy(PiccoloCustomNode pnode, PSwingCanvas canvas, HashMap<String, PiccoloCustomNode> allPNodes,
-			Menu menu, ArrowNodesHolder ANH , Map<String, Node> listNodes) {
+	public CreateEgdesHierarchyBy(PiccoloCustomNode pnode, JFrame frame) {
 		super("Show hierarchy ingoing edges ",new ImageIcon("images/left-arrow.png"));
-		this.allPNodes = allPNodes;
+
 		this.pnode = pnode;
-		this.canvas = canvas;
-		this.menu = menu;
-		this.ANH = ANH;
-		this.listNodes = listNodes;
-		createEdgesBy = new CreateEdgesBy(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
+		this.frame = (NewDisplayDG)frame;
+		
+		createEdgesBy = new CreateEdgesBy(pnode, this.frame);
 		addActionListener();
 	}
 	public void drawOutgoingdges(PiccoloCustomNode pnode , PSwingCanvas canvas) {
-		createEdgesBy = new CreateEdgesBy(pnode, canvas, this.allPNodes, menu,ANH,listNodes);
+		createEdgesBy = new CreateEdgesBy(pnode, this.frame);
 		createEdgesBy.drawOutgoingdges(pnode, canvas);
 		for(PiccoloCustomNode child : pnode.getHierarchy()) {
-			createEdgesBy = new CreateEdgesBy(child, canvas, this.allPNodes, menu,ANH,listNodes);
+			createEdgesBy = new CreateEdgesBy(child, this.frame);
 			createEdgesBy.drawOutgoingdges(child, canvas);
 		}
-		for (Parrow arrow : ANH.getVisibleArrows()) {
-			ANH.updatePosition(arrow);
+		for (Parrow arrow : this.frame.getANH().getVisibleArrows()) {
+			this.frame.getANH().updatePosition(arrow);
 		}
-		menu.hideMenu();
+		this.frame.getMenu().hideMenu();
 	}
 	
 	public void addActionListener() {
 		this.addActionListener(new AbstractAction() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				drawOutgoingdges(pnode, canvas);
+				drawOutgoingdges(pnode, frame.getCanvas());
 			}
 		});
 	}

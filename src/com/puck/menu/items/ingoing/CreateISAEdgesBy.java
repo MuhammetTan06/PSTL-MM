@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 
 import org.piccolo2d.PNode;
@@ -17,6 +18,7 @@ import org.piccolo2d.extras.pswing.PSwingCanvas;
 import com.puck.arrows.ArrowNodesHolder;
 import com.puck.arrows.Parrow;
 import com.puck.arrows.ParrowExtends;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.menu.Menu;
 import com.puck.nodes.piccolo2d.Edge;
 import com.puck.nodes.piccolo2d.Node;
@@ -24,23 +26,18 @@ import com.puck.nodes.piccolo2d.PiccoloCustomNode;
 import com.puck.utilities.piccolo2d.XmlToStructure;
 
 public class CreateISAEdgesBy extends JMenuItem {
-	private HashMap<String, PiccoloCustomNode> allPNodes;
-	private Map<String, Node> listNodes ;
+	
 	private PiccoloCustomNode pnode;
-	private PSwingCanvas canvas;
-	private Menu menu;
-	private ArrowNodesHolder ANH;
+	private NewDisplayDG frame;
 
-	public CreateISAEdgesBy(PiccoloCustomNode pnode, PSwingCanvas canvas, HashMap<String, PiccoloCustomNode> allPNodes,
-			Menu menu, ArrowNodesHolder ANH, Map<String, Node> listNodes) {
+
+	public CreateISAEdgesBy(PiccoloCustomNode pnode, JFrame frame) {
 		super("show extends ingoing",new ImageIcon("left-arrow.png"));
 		//this.setText();
-		this.allPNodes = allPNodes;
+	
 		this.pnode = pnode;
-		this.canvas = canvas;
-		this.menu = menu;
-		this.ANH = ANH;
-		this.listNodes = listNodes;
+		this.frame = (NewDisplayDG)frame;
+	
 		addActionListener();
 	}
 
@@ -51,39 +48,47 @@ public class CreateISAEdgesBy extends JMenuItem {
 		HashMap<String, Edge> relation = getRelationInGoing();
 		for (Entry<String, Edge> edgeEntry : relation.entrySet()) {
 			Edge e = edgeEntry.getValue();
+			for(Edge ed : this.frame.getForbiddenEdges()) {
+				if(ed.getId().equals(e.getId())) {
+					e.setViolation("1");
+					break;
+				}
+				else 
+					e.setViolation("0");
+			}
 				PNode to = target;
-				PNode from = (allPNodes.get(e.getFrom()));
+				PNode from = (this.frame.getAllPNodes().get(e.getFrom()));
 				if (from.getParent() instanceof PiccoloCustomNode && !((PiccoloCustomNode) from.getParent()).isHidden()) {
 					Parrow arow = new ParrowExtends(from, to, from, to, e.getViolation(), Parrow.REAL_TYPE);
-					ANH.addArrow(arow);
+					this.frame.getANH().addArrow(arow);
 				} else {
 					for (PiccoloCustomNode pnode : ((PiccoloCustomNode) from).getAscendency()) {
 						if (!pnode.isHidden()) {
-							ANH.addArrow(new ParrowExtends(from, to, pnode, to, e.getViolation(), Parrow.REAL_TYPE));
+							this.frame.getANH().addArrow(new ParrowExtends(from, to, pnode, to, e.getViolation(), Parrow.REAL_TYPE));
 							break;
 						}
 					}
 				}
 			}
 		// }
-		menu.hideMenu();
+		this.frame.getMenu().hideMenu();
 	}
 
 	public void addActionListener() {
 		this.addActionListener(new AbstractAction() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				drawExtendsEdges(pnode, canvas);
+				drawExtendsEdges(pnode, frame.getCanvas());
 			}
 		});
 	}
 
 	public HashMap<String, Edge> getRelationInGoing() {
-		Node currentNode = listNodes.get(pnode.getidNode());
+		Node currentNode = this.frame.getListNodes().get(pnode.getidNode());
 		HashMap<String, Edge> relationInGoing = new HashMap<>();
 		if (currentNode != null) {
 
-			for (Entry<String, Node> nodeEntry : listNodes.entrySet()) {
+			for (Entry<String, Node> nodeEntry : this.frame.getListNodes().entrySet()) {
 				Node n = nodeEntry.getValue();
 				HashMap<String, Edge> relation = n.getRelation();
 				for (Entry<String, Edge> edgeEntry : relation.entrySet()) {

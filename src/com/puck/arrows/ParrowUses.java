@@ -34,8 +34,8 @@ public class ParrowUses extends Parrow{
     	line = PPath.createLine(0, 0, 0, 0);
     	head = new TriangleHollow(Color.RED, new BasicStroke(1));
 		
-    	Color color = edgeViolation.equals("1") ? Color.RED : Color.BLACK;
-		int thic = edgeViolation.equals("1") ? 3 : 1;
+    	Color color = this.violation.equals("1") ? Color.RED : Color.BLACK;
+		int thic = this.violation.equals("1") ? 3 : 1;
 		draw(from, to, this.arrowType, color, thic);
 			
 		

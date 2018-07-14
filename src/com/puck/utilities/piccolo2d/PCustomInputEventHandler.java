@@ -71,11 +71,11 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 		setEventFilter(new PInputEventFilter(InputEvent.BUTTON1_MASK & InputEvent.BUTTON2_MASK));
 		this.frame = (NewDisplayDG)frame;
 		this.pnode = pnode;
-		this.createEdgesOf = new CreateEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(),this.frame.getListNodes());
+		this.createEdgesOf = new CreateEdgesOf(pnode, this.frame);
 		this.removeEdgesOf = new RemoveEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
-		this.createEdgesBy = new CreateEdgesBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
-		this.createEgdesHierarchyBy = new CreateEgdesHierarchyBy(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
-		this.createEgdesHierarchyOf = new CreateEgdesHierarchyOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
+		this.createEdgesBy = new CreateEdgesBy(pnode, this.frame);
+		this.createEgdesHierarchyBy = new CreateEgdesHierarchyBy(pnode, this.frame);
+		this.createEgdesHierarchyOf = new CreateEgdesHierarchyOf(pnode, this.frame);
 		
 		this.removesHierarchyEdgesOf = new RemovesHierarchyEdgesOf(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
 		this.hideNode = new HideNode(pnode, this.frame.getCanvas(), this.frame.getAllPNodes(), this.frame.getMenu(), this.frame.getANH(), this.frame.getListNodes());
@@ -103,9 +103,6 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 				pnode.toggleChildren();
 				
 				
-				this.frame.getANH().updateAllPosition();
-				
-				this.frame.getRoot().setLayout();
 				
 //				for(Parrow p:this.frame.getANH().getAllArrows()) {
 //					
@@ -124,8 +121,11 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 //					this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
 //				}
 				
+				//Refresh
 				
+				this.frame.getANH().updateAllPosition();
 				
+				this.frame.getRoot().setLayout();
 				ArrayList<PiccoloCustomNode> allNodes = new ArrayList<PiccoloCustomNode>();
 				allNodes.add(this.frame.getRoot());
 				allNodes.addAll(this.frame.getRoot().getHierarchy());
@@ -133,13 +133,14 @@ public class PCustomInputEventHandler extends PBasicInputEventHandler {
 					this.frame.getANH().hide_show_arrows(c);
 				this.frame.getANH().updateAllPosition();
 				
-				
+				//
+			
+				if(this.frame.getForbiddenEdges().size()!=0)
+					this.frame.drawForbiddenDependencyCounters();
 				
 				this.frame.getRoot().setLayout();
 				this.frame.getRoot().updateContentBoundingBoxes(false, this.frame.getCanvas());
 
-				if(this.frame.getForbiddenEdges().size()!=0)
-					this.frame.drawForbiddenDependencyCounters();
 				
 			}
 			if (aEvent.isRightMouseButton()) {

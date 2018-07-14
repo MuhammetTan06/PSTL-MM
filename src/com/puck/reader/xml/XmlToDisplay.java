@@ -8,10 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.JFrame;
+
 import org.piccolo2d.PNode;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
 import com.puck.arrows.ArrowNodesHolder;
+import com.puck.display.piccolo2d.NewDisplayDG;
 import com.puck.display.piccolo2d.NodeToPnodeParser;
 import com.puck.menu.Menu;
 import com.puck.menu.items.ingoing.CreateEgdesHierarchyBy;
@@ -27,35 +30,32 @@ import com.puck.utilities.piccolo2d.XmlToStructure;
  * */
 public class XmlToDisplay {
 	private StringBuilder xmlString;
-	private PiccoloCustomNode root;
 	private HashMap<String, Edge> addedEdges = new HashMap<String, Edge>();
 	private HashMap<String, PiccoloCustomNode> addedPnodes = new HashMap<String, PiccoloCustomNode>();
-	private HashMap<String, PiccoloCustomNode> allPNodes = new HashMap<>();
-	private Map<String, Node> listNodes;
 	private BufferedWriter br;
 	private CreateEgdesHierarchyBy createEdgesHierarchyBy;
 	private CreateEgdesHierarchyOf createEdgesHierarchyOf;
-	private PSwingCanvas canvas;
-	private Menu menu;
-	private ArrowNodesHolder ANH;
+	private NewDisplayDG frame;
+	
 
-	public XmlToDisplay() {
+	public XmlToDisplay(JFrame frame) {
 		xmlString = new StringBuilder();
 		xmlString.append("<?xml version=\"1.0\"?>\n");
 		xmlString.append("<DG>\n");
-		this.listNodes = new XmlToStructure("DependecyGraph.xml").parseNode();
-		this.root = new NodeToPnodeParser(allPNodes, listNodes).getPackageNodes();
-		this.canvas = new PSwingCanvas();
-		this.menu = new Menu();
-		this.ANH = new ArrowNodesHolder();
-		root.setParent(new PNode());
-		root.expandAll();
+		this.frame = (NewDisplayDG)frame;
+		this.frame.setListNodes(new XmlToStructure("DependecyGraph.xml").parseNode());
+		this.frame.setRoot(new NodeToPnodeParser(this.frame.getAllPNodes(), this.frame.getListNodes()).getPackageNodes());
+		this.frame.setCanvas(new PSwingCanvas());
+		this.frame.setMenu(new Menu());
+		this.frame.setANH(new ArrowNodesHolder());
+		this.frame.getRoot().setParent(new PNode());
+		this.frame.getRoot().expandAll();
 		
-		createEdgesHierarchyBy = new CreateEgdesHierarchyBy(root, canvas, allPNodes, menu, ANH, listNodes);
-		createEdgesHierarchyOf = new CreateEgdesHierarchyOf(root, canvas, allPNodes, menu, ANH, listNodes);
-		addPnodes(root);
-		createEdgesHierarchyBy.drawOutgoingdges(root, canvas);
-		createEdgesHierarchyOf.drawOutgoingdges(root, canvas);
+		createEdgesHierarchyBy = new CreateEgdesHierarchyBy(this.frame.getRoot(), this.frame);
+		createEdgesHierarchyOf = new CreateEgdesHierarchyOf(this.frame.getRoot(), this.frame);
+		addPnodes(this.frame.getRoot());
+		createEdgesHierarchyBy.drawOutgoingdges(this.frame.getRoot(), this.frame.getCanvas());
+		createEdgesHierarchyOf.drawOutgoingdges(this.frame.getRoot(), this.frame.getCanvas());
 		
 		for (Entry<String, PiccoloCustomNode> entry : addedPnodes.entrySet()) {
 			String key = entry.getKey();
@@ -121,13 +121,13 @@ public class XmlToDisplay {
 		}
 	}
 	public void addEdgesToXml(PiccoloCustomNode pnode) {
-		Node node = listNodes.get(pnode.getidNode());
+		Node node = this.frame.getListNodes().get(pnode.getidNode());
 		for (Entry<String, PiccoloCustomNode> entry : addedPnodes.entrySet()) {
 			String key = entry.getKey();
 			PiccoloCustomNode p = entry.getValue();
 			for (PiccoloCustomNode child : p.getChildren()) {
 				if (node != null) {
-					Edge e = getCointainsEdge(node, listNodes.get(child.getidNode()));
+					Edge e = getCointainsEdge(node, this.frame.getListNodes().get(child.getidNode()));
 					if (e != null && !addedEdges.containsKey(e)) {		
 						xmlString.append(edgeToString(e));
 					}
